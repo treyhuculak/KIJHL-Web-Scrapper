@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIJHL Game Scraper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 1.1em;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="date"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-size: 1.1em;
+            display: none;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .games-container {
+            display: grid;
+            gap: 20px;
+        }
+
+        .game-card {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .game-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .game-number {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.9em;
+        }
+
+        .game-number a {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .game-number a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .teams {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+            text-align: center;
+        }
+
+        .score {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #667eea;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .pims-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .pim-item {
+            text-align: center;
+        }
+
+        .pim-item .label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .pim-item .value {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .total-pims {
+            color: #667eea;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        .no-games {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .officials-info {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .official-group {
+            text-align: center;
+        }
+
+        .official-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .official-names {
+            font-size: 1em;
+            color: #333;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏒 KIJHL Game Scraper</h1>
+            <p>Enter a date to fetch game results and penalty minutes</p>
+        </div>
+
+        <div class="card">
+            <form id="scrapeForm">
+                <div class="form-group">
+                    <label for="dateInput">Select Date (YYYY-MM-DD)</label>
+                    <input type="date" id="dateInput" name="date" required>
+                </div>
+                <button type="submit" id="submitBtn">Scrape Games</button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Fetching game data...</p>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <div class="card">
+                <div class="stats" id="stats"></div>
+
+                <div id="errors"></div>
+
+                <div class="games-container" id="gamesContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('scrapeForm');
+        const dateInput = document.getElementById('dateInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const statsContainer = document.getElementById('stats');
+        const errorsContainer = document.getElementById('errors');
+        const gamesContainer = document.getElementById('gamesContainer');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const date = dateInput.value;
+            if (!date) {
+                alert('Please select a date');
+                return;
+            }
+
+            // Show loading state
+            submitBtn.disabled = true;
+            loading.classList.add('active');
+            results.classList.remove('active');
+            statsContainer.innerHTML = '';
+            errorsContainer.innerHTML = '';
+            gamesContainer.innerHTML = '';
+
+            try {
+                const response = await fetch('/api/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ date: date })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'An error occurred');
+                }
+
+                // Display results
+                displayResults(data);
+
+            } catch (error) {
+                errorsContainer.innerHTML = `
+                    <div class="error">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+                results.classList.add('active');
+            } finally {
+                submitBtn.disabled = false;
+                loading.classList.remove('active');
+            }
+        });
+
+        function displayResults(data) {
+            // Display stats
+            if (data.success) {
+                statsContainer.innerHTML = `
+                    <div class="stat-card">
+                        <h3>${data.total_games}</h3>
+                        <p>Total Games</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>${data.games.length}</h3>
+                        <p>Games Found</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>${data.elapsed_time.toFixed(2)}s</h3>
+                        <p>Fetch Time</p>
+                    </div>
+                `;
+            }
+
+            // Display errors
+            if (data.errors && data.errors.length > 0) {
+                errorsContainer.innerHTML = data.errors.map(error => {
+                    const errorMsg = typeof error === 'string' ? error :
+                        `Game ${error.game_number}: ${error.error}`;
+                    return `<div class="error">${errorMsg}</div>`;
+                }).join('');
+            }
+
+            // Display games
+            if (data.games && data.games.length > 0) {
+                gamesContainer.innerHTML = data.games.map(game => `
+                    <div class="game-card">
+                        <div class="game-header">
+                            <span class="game-number">
+                                <a href="https://www.kijhl.ca/stats/game-center/${game.game_number}" target="_blank" rel="noopener noreferrer">
+                                    Game #${game.game_number}
+                                </a>
+                            </span>
+                        </div>
+                        <div class="teams">${game.away_team} vs ${game.home_team}</div>
+                        <div class="score">${game.score}</div>
+                        <div class="pims-info">
+                            <div class="pim-item">
+                                <div class="label">${game.away_abbrv} PIMs</div>
+                                <div class="value">${game.away_pims}</div>
+                            </div>
+                            <div class="pim-item">
+                                <div class="label">Total PIMs</div>
+                                <div class="value total-pims">${game.total_pims}</div>
+                            </div>
+                            <div class="pim-item">
+                                <div class="label">${game.home_abbrv} PIMs</div>
+                                <div class="value">${game.home_pims}</div>
+                            </div>
+                        </div>
+                        ${(game.referees && game.referees.length > 0) || (game.linesmen && game.linesmen.length > 0) ? `
+                        <div class="officials-info">
+                            ${game.referees && game.referees.length > 0 ? `
+                            <div class="official-group">
+                                <div class="official-label">Referees</div>
+                                <div class="official-names">${game.referees.join(' & ')}</div>
+                            </div>
+                            ` : ''}
+                            ${game.linesmen && game.linesmen.length > 0 ? `
+                            <div class="official-group">
+                                <div class="official-label">Linesmen</div>
+                                <div class="official-names">${game.linesmen.join(' & ')}</div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            } else if (data.success) {
+                gamesContainer.innerHTML = '<div class="no-games">No games found for this date.</div>';
+            }
+
+            results.classList.add('active');
+        }
+
+        // Set today's date as default
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+    </script>
+</body>
+
+</html>

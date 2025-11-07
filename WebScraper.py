@@ -70,11 +70,11 @@ class WebScraper:
 
 def fetch_game_api(game_number):
     """Fetch game data from the HockeyTech gameSummary API"""
-    api_url = f"https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gameSummary&game_id={game_number}&key=2589e0f644b1bb71&site_id=2&client_code=kijhl&lang=en&league_id="
+    game_api_url = f"https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gameSummary&game_id={game_number}&key=2589e0f644b1bb71&site_id=2&client_code=kijhl&lang=en&league_id="
     
     try:
         req = urllib.request.Request(
-            api_url,
+            game_api_url,
             headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
         )
         
@@ -95,7 +95,33 @@ def fetch_game_api(game_number):
                 json_text = text
             
             data = json.loads(json_text)
+
+            # Extract Referees
+            referees_list = data.get('referees', [])
+            referee1_name = 'Unknown'
+            referee2_name = 'Unknown'
             
+            if len(referees_list) > 0:
+                referee1 = referees_list[0]
+                referee1_name = f"{referee1.get('firstName', 'Unknown')} {referee1.get('lastName', 'Unknown')}"
+            
+            if len(referees_list) > 1:
+                referee2 = referees_list[1]
+                referee2_name = f"{referee2.get('firstName', 'Unknown')} {referee2.get('lastName', 'Unknown')}"
+
+            # Extract Linesmen
+            linesmen_list = data.get('linesmen', [])
+            linesman1_name = 'Unknown'
+            linesman2_name = 'Unknown'
+            
+            if len(linesmen_list) > 0:
+                linesman1 = linesmen_list[0]
+                linesman1_name = f"{linesman1.get('firstName', 'Unknown')} {linesman1.get('lastName', 'Unknown')}"
+            
+            if len(linesmen_list) > 1:
+                linesman2 = linesmen_list[1]
+                linesman2_name = f"{linesman2.get('firstName', 'Unknown')} {linesman2.get('lastName', 'Unknown')}"
+
             # Extract team names
             away_team = data.get('visitingTeam', {}).get('info', {}).get('name', 'Unknown')
             home_team = data.get('homeTeam', {}).get('info', {}).get('name', 'Unknown')
@@ -119,7 +145,9 @@ def fetch_game_api(game_number):
                 'score': score_text,
                 'home_pims': str(home_pims),
                 'away_pims': str(away_pims),
-                'total_pims': int(home_pims) + int(away_pims)
+                'total_pims': int(home_pims) + int(away_pims),
+                'referees': [referee1_name, referee2_name],
+                'linesmen': [linesman1_name, linesman2_name]
             }, None
             
     except Exception as e:
@@ -175,6 +203,8 @@ if __name__ == "__main__":
                         print(f"Game {game_num}: {' vs '.join(data['teams'])} - Score: {data['score']}")
                         print(f"\t{data['teams_abbrv'][0]} PIMs: {data['away_pims']}, {data['teams_abbrv'][1]} PIMs: {data['home_pims']}")
                         print(f"\tTotal PIMs: {data['total_pims']}\n")
+                        print(f"\tReferees: {data['referees'][0]} and {data['referees'][1]}\n")
+                        print(f"\tLinesmen: {data['linesmen'][0]} and {data['linesmen'][1]}\n")
             
             elapsed_time = time.time() - start_time
             print(f"Total time: {elapsed_time:.2f} seconds")
