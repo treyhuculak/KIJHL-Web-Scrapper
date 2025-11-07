@@ -69,9 +69,8 @@ class WebScraper:
 
 
 def fetch_game_api(game_number):
-    """Try to fetch game data from the API endpoint"""
-    # The Angular app likely calls an API - this is a common pattern
-    api_url = f"https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gameSummary&game_id={game_number}&key=50c2cd9b5e18e390&client_code=kijhl&site_id=2&league_id=1&lang=en"
+    """Fetch game data from the HockeyTech gameSummary API"""
+    api_url = f"https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gameSummary&game_id={game_number}&key=2589e0f644b1bb71&site_id=2&client_code=kijhl&lang=en&league_id="
     
     try:
         req = urllib.request.Request(
@@ -80,23 +79,43 @@ def fetch_game_api(game_number):
         )
         
         with urllib.request.urlopen(req, timeout=15) as response:
-            data = json.loads(response.read().decode('utf-8'))
+            text = response.read().decode('utf-8')
             
-            # Extract team info
-            home_team = data.get('homeTeam', {}).get('name', 'Unknown')
-            away_team = data.get('visitingTeam', {}).get('name', 'Unknown')
+            if not text or len(text) < 10:
+                return game_number, None, f"Empty response"
             
-            # Extract score
-            home_score = data.get('homeTeam', {}).get('score', '0')
-            away_score = data.get('visitingTeam', {}).get('score', '0')
+            # Remove JSONP callback: angular.callbacks._4({...})
+            if 'angular.callbacks.' in text:
+                start = text.index('(') + 1
+                end = text.rindex(')')
+                json_text = text[start:end]
+            elif text.startswith('(') and text.endswith(')'):
+                json_text = text[1:-1]
+            else:
+                json_text = text
+            
+            data = json.loads(json_text)
+            
+            # Extract team names
+            away_team = data.get('visitingTeam', {}).get('info', {}).get('name', 'Unknown')
+            home_team = data.get('homeTeam', {}).get('info', {}).get('name', 'Unknown')
+
+            # Extract team abbreviations
+            away_abbrv = data.get('visitingTeam', {}).get('info', {}).get('abbreviation', 'Unknown')
+            home_abbrv = data.get('homeTeam', {}).get('info', {}).get('abbreviation', 'Unknown')
+            
+            # Extract scores
+            away_score = data.get('visitingTeam', {}).get('stats', {}).get('goals', 0)
+            home_score = data.get('homeTeam', {}).get('stats', {}).get('goals', 0)
             score_text = f"{away_score} - {home_score}"
             
             # Extract PIMs
-            home_pims = data.get('homeTeam', {}).get('stats', {}).get('penalties', {}).get('mins', '0')
-            away_pims = data.get('visitingTeam', {}).get('stats', {}).get('penalties', {}).get('mins', '0')
+            away_pims = data.get('visitingTeam', {}).get('stats', {}).get('penaltyMinuteCount', 0)
+            home_pims = data.get('homeTeam', {}).get('stats', {}).get('penaltyMinuteCount', 0)
             
             return game_number, {
                 'teams': [away_team, home_team],
+                'teams_abbrv': [away_abbrv, home_abbrv],
                 'score': score_text,
                 'home_pims': str(home_pims),
                 'away_pims': str(away_pims),
@@ -104,7 +123,7 @@ def fetch_game_api(game_number):
             }, None
             
     except Exception as e:
-        return game_number, None, f"API fetch failed: {str(e)}"
+        return game_number, None, f"{type(e).__name__}: {str(e)}"
 
 
 if __name__ == "__main__":
@@ -115,7 +134,7 @@ if __name__ == "__main__":
     scraper = WebScraper(url)
     
     try:
-        # Fetch the main schedule page (still need Selenium for this)
+        # Fetch the main schedule page
         scraper.fetch_page(wait_for_class="ht-daily-sch-page")
         soup = scraper.parse_page()
         
@@ -128,9 +147,6 @@ if __name__ == "__main__":
         
         if not schedule_div:
             print("Could not find schedule container")
-            print("\nDebugging info:")
-            print(f"Page content length: {len(scraper.page_content)}")
-            print(f"'ht-daily-sch-page' in content: {'ht-daily-sch-page' in scraper.page_content}")
         else:
             print("Found schedule container!")
             
@@ -140,8 +156,8 @@ if __name__ == "__main__":
             
             game_numbers = [i.get('id', 'N/A') for i in game_boxes]
             
-            # Try API approach first
-            print("Fetching game details via API (SUPER FAST)...\n")
+            # SUPER FAST API execution
+            print("Fetching game details via API...\n")
             start_time = time.time()
             
             max_workers = min(20, len(game_numbers))
@@ -157,7 +173,7 @@ if __name__ == "__main__":
                         print(f"Game {game_num}: Error - {error}\n")
                     elif data:
                         print(f"Game {game_num}: {' vs '.join(data['teams'])} - Score: {data['score']}")
-                        print(f"\t{data['teams'][1]} PIMs: {data['home_pims']}, {data['teams'][0]} PIMs: {data['away_pims']}")
+                        print(f"\t{data['teams_abbrv'][0]} PIMs: {data['away_pims']}, {data['teams_abbrv'][1]} PIMs: {data['home_pims']}")
                         print(f"\tTotal PIMs: {data['total_pims']}\n")
             
             elapsed_time = time.time() - start_time
