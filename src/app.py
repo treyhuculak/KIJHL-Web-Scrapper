@@ -15,7 +15,9 @@ def scrape_games(date):
         'errors': [],
         'total_games': 0,
         'elapsed_time': 0,
-        'success': False
+        'success': False,
+        'jungle_score': 0,
+        'dirty_team': ""
     }
     
     try:
@@ -55,6 +57,9 @@ def scrape_games(date):
         # Fetch game details via API
         start_time = time.time()
         max_workers = min(20, len(game_numbers))
+
+        dirtiest_team_name = ""
+        dirtiest_team_pims = 0
         
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_game = {executor.submit(fetch_game_api, game_num): game_num 
@@ -71,6 +76,9 @@ def scrape_games(date):
                 elif data:
                     away_abbrv = data['teams_abbrv'][0]
                     home_abbrv = data['teams_abbrv'][1]
+                    away_pims = int(data['away_pims'])
+                    home_pims = int(data['home_pims'])
+
                     results['games'].append({
                         'game_number': game_num,
                         'away_team': data['teams'][0],
@@ -86,8 +94,22 @@ def scrape_games(date):
                         'away_logo': logo_map.get(away_abbrv),
                         'home_logo': logo_map.get(home_abbrv)
                     })
+                    results['jungle_score'] += data['total_pims']
+
+                    # Returns the dirtiest team
+                    max_pims = max(away_pims, home_pims)
+                    if max_pims > dirtiest_team_pims:
+                        dirtiest_team_name = away_abbrv if away_pims > home_pims else home_abbrv
+                        dirtiest_team_pims = max_pims
         
         results['elapsed_time'] = time.time() - start_time
+
+        # Calculate Jungle Score (Average PIMs per game that day)
+        results['jungle_score'] = round(results['jungle_score'] / results['total_games'], 1)
+
+        # Gets the team with the most PIMs that day
+        results['dirty_team'] = dirtiest_team_name
+
         results['success'] = True
         
     except Exception as e:
