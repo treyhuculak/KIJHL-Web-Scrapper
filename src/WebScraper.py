@@ -4,7 +4,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import urllib.request
 import json
 import time
@@ -198,62 +197,3 @@ def fetch_game_api(game_number):
     except Exception as e:
         return game_number, None, f"{type(e).__name__}: {str(e)}"
 
-
-if __name__ == "__main__":
-    input_date = input("Enter the date (YYYY-MM-DD): ")
-    date = input_date.strip()
-    url = f"https://www.kijhl.ca/stats/daily-schedule/{date}?league=1&season=65&division=-1"
-    
-    scraper = WebScraper(url)
-    
-    try:
-        # Fetch the main schedule page
-        scraper.fetch_page(wait_for_class="ht-daily-sch-page")
-        soup = scraper.parse_page()
-        
-        if soup is None:
-            print("Failed to parse page")
-            exit()
-        
-        # Find the schedule
-        schedule_div = soup.find('div', class_='ht-daily-sch-page').find('div', class_='ng-hide')
-        
-        if not schedule_div:
-            print("Could not find schedule container")
-        else:
-            print("Found schedule container!")
-            
-            # Find all game boxes
-            game_boxes = schedule_div.find_all('div', class_='ht-sch-box')
-            print(f"\nFound {len(game_boxes)} games\n")
-            
-            game_numbers = [i.get('id', 'N/A') for i in game_boxes]
-            
-            # SUPER FAST API execution
-            print("Fetching game details via API...\n")
-            start_time = time.time()
-            
-            max_workers = min(20, len(game_numbers))
-            
-            with ThreadPoolExecutor(max_workers=max_workers) as executor:
-                future_to_game = {executor.submit(fetch_game_api, game_num): game_num 
-                                  for game_num in game_numbers}
-                
-                for future in as_completed(future_to_game):
-                    game_num, data, error = future.result()
-                    
-                    if error:
-                        print(f"Game {game_num}: Error - {error}\n")
-                    elif data:
-                        print(f"Game {game_num}: {' vs '.join(data['teams'])} - Score: {data['score']}")
-                        print(f"\t{data['teams_abbrv'][0]} PIMs: {data['away_pims']}, {data['teams_abbrv'][1]} PIMs: {data['home_pims']}")
-                        print(f"\tTotal PIMs: {data['total_pims']}\n")
-                        print(f"\tReferees: {data['referees'][0]} and {data['referees'][1]}\n")
-                        print(f"\tLinesmen: {data['linesmen'][0]} and {data['linesmen'][1]}\n")
-            
-            elapsed_time = time.time() - start_time
-            print(f"Total time: {elapsed_time:.2f} seconds")
-            print(f"Average time per game: {elapsed_time/len(game_numbers):.2f} seconds")
-
-    finally:
-        scraper.close()
