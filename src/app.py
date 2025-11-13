@@ -143,5 +143,5 @@ def api_scrape():
     return jsonify(results)
 
 if __name__ == '__main__':
-    app.run(debug=False, port=10000)
+    app.run(debug=True, port=5000)
 
