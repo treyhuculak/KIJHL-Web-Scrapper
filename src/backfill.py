@@ -6,25 +6,23 @@ For now, it only accepts a list of season IDs (to be provided later)
 and prints what it would process without actually scraping.
 """
 from typing import List
+import pandas as pd
 
-
-def backfill_seasons(season_ids: List[int]) -> None:
+def backfill_seasons() -> None:
     """
     Placeholder: backfill by season.
     Later this will:
       - iterate dates or game lists for each season
       - fetch games and insert them into the DB
     """
-    for sid in season_ids:
-        print(f"[Backfill] Would process season: {sid}")
+    years = [2020, 2021, 2022, 2023, 2024, 2025]
+    for year in years:
+        for date in pd.date_range(f'{year}-01-01', f'{year}-12-31'):
+            # date.strftime('%Y-%m-%d') -> WebScraper()
+            continue
 
 
 if __name__ == "__main__":
-    # Example usage (replace with your season list later)
-    example_seasons = []
-    if not example_seasons:
-        print("No seasons provided yet. Supply a list of season IDs when ready.")
-    else:
-        backfill_seasons(example_seasons)
+    backfill_seasons()
 
 

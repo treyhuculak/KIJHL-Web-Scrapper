@@ -55,6 +55,9 @@ class WebScraper:
         self.page_content = None
         self.driver = None
 
+    def set_url(self, url):
+        self.url = url
+
     def setup_driver(self, headless=True):
         """Set up Chrome driver with options"""
         chrome_options = Options()
