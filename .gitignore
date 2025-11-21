@@ -1,3 +1,8 @@
 src/*.json
 src/backfill.py
 src/database.py
+src/Dockerfile
+src/.dockerignore
+src/compose.yaml
+src/README.Docker.md
+.venv
