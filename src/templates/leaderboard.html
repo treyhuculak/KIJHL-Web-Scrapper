@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Leaderboard</title>
+    <style>
+        /* Reuse the CSS from index.html here for consistency */
+        :root {
+            --ref-black: #1a1a1a;
+            --ref-white: #ffffff;
+            --ref-red: #cc0000;
+            --ice-gray: #f0f2f5;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--ice-gray);
+            background-image: radial-gradient(#e6e6e6 1px, transparent 1px);
+            background-size: 20px 20px;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: var(--ref-white);
+            border-top: 5px solid var(--ref-black);
+            border-bottom: 5px solid var(--ref-red);
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .nav-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--ref-red);
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        /* Leaderboard Table Styling */
+        .table-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border-top: 4px solid var(--ref-black);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--ref-black);
+            color: white;
+        }
+
+        th,
+        td {
+            padding: 15px;
+            text-align: left;
+        }
+
+        th {
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 1px;
+        }
+
+        tr {
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:last-child {
+            border-bottom: none;
+        }
+
+        /* Stripes for rows */
+        tbody tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        /* Hover effect */
+        tbody tr:hover {
+            background-color: #fff0f0;
+            /* Light red tint */
+            border-left: 4px solid var(--ref-red);
+        }
+
+        .rank {
+            font-weight: bold;
+            color: #888;
+            width: 50px;
+        }
+
+        .name {
+            font-weight: bold;
+            color: var(--ref-black);
+            font-size: 1.1em;
+        }
+
+        .role-badge {
+            font-size: 0.7em;
+            padding: 3px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .role-referee {
+            background: #e0e0e0;
+            color: #333;
+            border: 1px solid #999;
+        }
+
+        .role-linesman {
+            background: #fff;
+            color: #999;
+            border: 1px solid #ddd;
+        }
+
+        .stat-val {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .stat-high {
+            color: var(--ref-red);
+        }
+
+        /* Highlight high PIMs */
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Officials Leaderboard</h1>
+            <a href="/" class="nav-link">← Back to Scraper</a>
+        </div>
+
+        <div class="filter-bar"
+            style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; border-left: 5px solid var(--ref-black);">
+            <form action="/leaderboard" method="GET"
+                style="display: flex; gap: 10px; width: 100%; align-items: center;">
+
+                <div>
+                    <label style="font-size: 0.8em; font-weight: bold; display: block;">OFFICIAL TYPE</label>
+                    <select name="role" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="all" {% if current_role=='all' %}selected{% endif %}>All Officials</option>
+                        <option value="referee" {% if current_role=='referee' %}selected{% endif %}>Referees</option>
+                        <option value="linesman" {% if current_role=='linesman' %}selected{% endif %}>Linesmen</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="font-size: 0.8em; font-weight: bold; display: block;">SORT BY</label>
+                    <select name="sort" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="pims" {% if current_sort=='pims' %}selected{% endif %}>Total PIMs</option>
+                        <option value="avg" {% if current_sort=='avg' %}selected{% endif %}>Avg PIMs/Game</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="font-size: 0.8em; font-weight: bold; display: block;">ORDER</label>
+                    <select name="order" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="desc" {% if current_order=='desc' %}selected{% endif %}>Highest First</option>
+                        <option value="asc" {% if current_order=='asc' %}selected{% endif %}>Lowest First</option>
+                    </select>
+                </div>
+
+                <div style="margin-left: auto;">
+                    <button type="submit"
+                        style="padding: 10px 20px; background: var(--ref-red); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">APPLY
+                        FILTERS</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Official</th>
+                        <th>Role</th>
+                        <th>Games Called</th>
+                        <th>Total PIMs</th>
+                        <th>Avg PIMs/Game</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for official in officials %}
+                    <tr>
+                        <td class="rank">{{ loop.index }}</td>
+                        <td class="name">{{ official.name }}</td>
+                        <td>
+                            <span class="role-badge role-{{ official.role }}">
+                                {{ official.role }}
+                            </span>
+                        </td>
+                        <td>{{ official.games_called }}</td>
+                        <td class="stat-val stat-high">{{ official.total_pims }}</td>
+                        <td class="stat-val">{{ official.avg_pims }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,12 +1,14 @@
 from flask import Flask, render_template, request, jsonify
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from database import DatabaseManager
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Import new API-based functions
 from getgames import get_game_ids_by_date, fetch_game_api, fetch_team_logos
 
 app = Flask(__name__)
+db_manager = DatabaseManager()
 
 def scrape_games(date):
     """
@@ -61,7 +63,7 @@ def scrape_games(date):
                     away_pims = int(data['away_pims'])
                     home_pims = int(data['home_pims'])
 
-                    results['games'].append({
+                    game_obj = {
                         'game_number': game_num,
                         'away_team': data['teams'][0],
                         'home_team': data['teams'][1],
@@ -74,8 +76,12 @@ def scrape_games(date):
                         'referees': data['referees'],
                         'linesmen': data['linesmen'],
                         'away_logo': logo_map.get(away_abbrv),
-                        'home_logo': logo_map.get(home_abbrv)
-                    })
+                        'home_logo': logo_map.get(home_abbrv),
+                        'date': date # Good to add the date to the saved object
+                    }
+
+                    results['games'].append(game_obj)
+
                     results['jungle_score'] += data['total_pims']
 
                     # Calculate dirtiest team
@@ -102,6 +108,28 @@ def index():
     """Render the main page"""
     return render_template('index.html')
 
+@app.route('/leaderboard')
+def leaderboard():
+    # Get filter params from URL (e.g., ?role=referee&sort=avg)
+    role = request.args.get('role', 'all')
+    sort = request.args.get('sort', 'pims') # 'pims' or 'avg'
+    order = request.args.get('order', 'desc') # 'desc' or 'asc'
+    
+    # Map frontend simple names to DB field names
+    sort_field = 'avg_pims' if sort == 'avg' else 'total_pims'
+    
+    officials = db_manager.get_leaderboard(
+        role=role, 
+        sort_by=sort_field, 
+        order=order
+    )
+    
+    return render_template('leaderboard.html', 
+                           officials=officials, 
+                           current_role=role, 
+                           current_sort=sort, 
+                           current_order=order)
+
 @app.route('/api/scrape', methods=['POST'])
 def api_scrape():
     """API endpoint to scrape games for a given date"""
@@ -119,6 +147,27 @@ def api_scrape():
     
     results = scrape_games(date)
     return jsonify(results)
+
+@app.route('/tasks/update-daily', methods=['GET', 'POST'])
+def daily_update():
+    """
+    Route specifically for Cloud Scheduler.
+    Scrapes games for the DATE BEFORE today (yesterday).
+    """
+    # Get yesterday's date
+    yesterday = datetime.now() - timedelta(days=1)
+    date_str = yesterday.strftime('%Y-%m-%d')
+    
+    print(f"Running automated update for: {date_str}")
+    
+    # Run the scraper (which now saves to DB automatically)
+    results = scrape_games(date_str)
+    
+    return jsonify({
+        "status": "success", 
+        "date": date_str,
+        "games_found": results['total_games']
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
