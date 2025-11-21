@@ -6,6 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KIJHL Game Scraper</title>
     <style>
+        :root {
+            --ref-black: #1a1a1a;
+            --ref-white: #ffffff;
+            --ref-red: #cc0000;
+            /* Hockey Canada Red */
+            --ice-gray: #f0f2f5;
+            --border-color: #d1d1d1;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,10 +22,14 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--ice-gray);
+            /* Subtle ice texture feel */
+            background-image: radial-gradient(#e6e6e6 1px, transparent 1px);
+            background-size: 20px 20px;
             min-height: 100vh;
             padding: 20px;
+            color: var(--ref-black);
         }
 
         .container {
@@ -24,29 +37,58 @@
             margin: 0 auto;
         }
 
+        /* --- Header / Referee Jersey Theme --- */
         .header {
             text-align: center;
-            color: white;
+            background: var(--ref-white);
+            border-top: 5px solid var(--ref-black);
+            border-bottom: 5px solid var(--ref-red);
+            padding: 40px 20px;
             margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        /* The Referee Stripes Pattern */
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: repeating-linear-gradient(90deg,
+                    var(--ref-black),
+                    var(--ref-black) 20px,
+                    var(--ref-white) 20px,
+                    var(--ref-white) 40px);
         }
 
         .header h1 {
-            font-size: 2.5em;
+            font-size: 2.8em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--ref-black);
+            font-weight: 900;
         }
 
         .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
+            font-size: 1.2em;
+            color: #555;
+            font-weight: 500;
         }
 
+        /* --- Input Section --- */
         .card {
-            background: white;
-            border-radius: 15px;
+            background: var(--ref-white);
+            border-radius: 4px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
+            border: 1px solid var(--border-color);
         }
 
         .form-group {
@@ -55,54 +97,73 @@
 
         label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-            font-size: 1.1em;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: var(--ref-black);
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 0.5px;
         }
 
         input[type="date"] {
             width: 100%;
-            padding: 12px 15px;
+            padding: 15px;
             font-size: 1.1em;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            transition: border-color 0.3s;
+            border: 2px solid var(--ref-black);
+            /* Strong borders */
+            border-radius: 0;
+            /* Square athletic look */
+            background: #fafafa;
+            color: var(--ref-black);
+            transition: all 0.2s;
         }
 
         input[type="date"]:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--ref-red);
+            background: #fff;
         }
 
         button {
             width: 100%;
-            padding: 15px;
-            font-size: 1.2em;
-            font-weight: 600;
-            color: white;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 18px;
+            font-size: 1.3em;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--ref-white);
+            background-color: var(--ref-red);
             border: none;
-            border-radius: 8px;
+            border-radius: 0 0 4px 4px;
+            /* Slight rounding on bottom */
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.2s;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 0 #990000;
+            /* 3D Click effect */
         }
 
         button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            background-color: var(--ref-black);
+            box-shadow: 0 4px 0 #000;
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: none;
         }
 
         button:disabled {
-            opacity: 0.6;
+            background-color: #ccc;
+            box-shadow: none;
             cursor: not-allowed;
         }
 
+        /* --- Loading Spinner --- */
         .loading {
             text-align: center;
-            padding: 20px;
-            color: #667eea;
-            font-size: 1.1em;
+            padding: 30px;
+            color: var(--ref-black);
+            font-weight: 600;
             display: none;
         }
 
@@ -111,13 +172,16 @@
         }
 
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--ref-red);
+            /* Red spinner */
+            border-right: 5px solid var(--ref-black);
+            /* Black spinner accent */
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            width: 50px;
+            height: 50px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
         }
 
         @keyframes spin {
@@ -130,6 +194,7 @@
             }
         }
 
+        /* --- Results Section --- */
         .results {
             display: none;
         }
@@ -141,152 +206,166 @@
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            gap: 20px;
             margin-bottom: 30px;
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
+            background: var(--ref-black);
+            color: var(--ref-white);
+            padding: 25px;
+            border-radius: 4px;
             text-align: center;
+            border-bottom: 4px solid var(--ref-red);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Specific style for the Dirty Team card to make it stand out */
+        .stat-card:nth-child(2) {
+            background: var(--ref-red);
+            border-bottom: 4px solid var(--ref-black);
         }
 
         .stat-card h3 {
-            font-size: 2em;
+            font-size: 2.5em;
             margin-bottom: 5px;
+            font-weight: 800;
         }
 
         .stat-card p {
             opacity: 0.9;
             font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
+        /* --- Game Cards --- */
         .games-container {
             display: grid;
-            gap: 20px;
+            gap: 25px;
         }
 
         .game-card {
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            border-radius: 8px;
-            padding: 20px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            background: var(--ref-white);
+            /* The Armband Look */
+            border-left: 10px solid var(--ref-black);
+            padding: 25px;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            position: relative;
         }
 
         .game-card:hover {
             transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            /* Hover turns the armband RED (Penalty!) */
+            border-left-color: var(--ref-red);
         }
 
         .game-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .game-number {
+            background: var(--ref-black);
+            color: var(--ref-white);
+            padding: 4px 10px;
+            font-size: 0.8em;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-radius: 2px;
+        }
+
+        .game-number a {
+            color: var(--ref-white);
+            text-decoration: none;
         }
 
         .team-with-logo {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 30px;
+            gap: 20px;
+            margin: 20px 0;
         }
 
         .team-logo {
-            width: 64px;
-            height: 64px;
+            width: 70px;
+            height: 70px;
             object-fit: contain;
-        }
-
-        .game-number {
-            font-weight: 600;
-            color: #667eea;
-            font-size: 0.9em;
-        }
-
-        .game-number a {
-            color: #667eea;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .game-number a:hover {
-            color: #764ba2;
-            text-decoration: underline;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
         }
 
         .teams {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #333;
-            flex: 1;
+            font-size: 1.4em;
+            font-weight: 800;
+            color: var(--ref-black);
+            text-transform: uppercase;
             text-align: center;
         }
 
         .score {
-            font-size: 1.5em;
-            font-weight: 700;
-            color: #667eea;
-            margin: 10px 0;
+            font-size: 2em;
+            font-weight: 900;
+            color: var(--ref-black);
             text-align: center;
+            background: #f0f0f0;
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 4px;
+            margin: 0 auto;
         }
 
+        /* --- PIMS Section --- */
         .pims-info {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #e0e0e0;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            background: #fafafa;
+            padding: 15px;
+            border: 1px solid #eee;
         }
 
         .pim-item {
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .pim-item .label {
-            font-size: 0.85em;
+            font-size: 0.75em;
             color: #666;
+            text-transform: uppercase;
+            font-weight: 700;
             margin-bottom: 5px;
         }
 
         .pim-item .value {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #333;
+            font-size: 1.4em;
+            font-weight: 800;
+            color: var(--ref-black);
         }
 
-        .total-pims {
-            color: #667eea;
+        /* Highlight total PIMs in Red */
+        .pim-item .value.total-pims {
+            color: var(--ref-red);
+            font-size: 1.6em;
         }
 
-        .error {
-            background: #fee;
-            color: #c33;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #c33;
-        }
-
-        .no-games {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-            font-size: 1.1em;
-        }
-
+        /* --- Officials Section --- */
         .officials-info {
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px solid #e0e0e0;
+            border-top: 1px dashed #ccc;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
 
@@ -295,16 +374,60 @@
         }
 
         .official-label {
-            font-size: 0.85em;
-            color: #666;
-            margin-bottom: 8px;
-            font-weight: 600;
+            font-size: 0.75em;
+            color: var(--ref-red);
+            /* Red labels for officials */
+            text-transform: uppercase;
+            font-weight: 800;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
         }
 
         .official-names {
-            font-size: 1em;
+            font-size: 0.95em;
             color: #333;
-            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        /* --- Errors & Status --- */
+        .error {
+            background: #fff0f0;
+            color: var(--ref-red);
+            padding: 20px;
+            border-left: 5px solid var(--ref-red);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .no-games {
+            text-align: center;
+            padding: 50px;
+            color: #777;
+            font-size: 1.2em;
+            background: white;
+            border: 2px dashed #ccc;
+        }
+
+        /* Mobile tweaks */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .team-with-logo {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .team-logo {
+                width: 50px;
+                height: 50px;
+            }
+
+            .pims-info {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
         }
     </style>
 </head>
@@ -313,7 +436,7 @@
     <div class="container">
         <div class="header">
             <h1>🏒 KIJHL Game Scraper</h1>
-            <p>Enter a date to fetch game results and penalty minutes</p>
+            <p>Official Game Results & Penalty Tracker</p>
         </div>
 
         <div class="card">
@@ -322,23 +445,19 @@
                     <label for="dateInput">Select Date (YYYY-MM-DD)</label>
                     <input type="date" id="dateInput" name="date" required>
                 </div>
-                <button type="submit" id="submitBtn">Scrape Games</button>
+                <button type="submit" id="submitBtn">Load Games</button>
             </form>
 
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <p>Fetching game data...</p>
+                <p>REVIEWING THE PLAY...</p>
             </div>
         </div>
 
         <div class="results" id="results">
-            <div class="card">
-                <div class="stats" id="stats"></div>
-
-                <div id="errors"></div>
-
-                <div class="games-container" id="gamesContainer"></div>
-            </div>
+            <div class="stats" id="stats"></div>
+            <div id="errors"></div>
+            <div class="games-container" id="gamesContainer"></div>
         </div>
     </div>
 
@@ -363,6 +482,7 @@
 
             // Show loading state
             submitBtn.disabled = true;
+            submitBtn.innerHTML = "SCAPING..."; // Feedback on button
             loading.classList.add('active');
             results.classList.remove('active');
             statsContainer.innerHTML = '';
@@ -390,12 +510,13 @@
             } catch (error) {
                 errorsContainer.innerHTML = `
                     <div class="error">
-                        <strong>Error:</strong> ${error.message}
+                        <strong>GAME MISCONDUCT:</strong> ${error.message}
                     </div>
                 `;
                 results.classList.add('active');
             } finally {
                 submitBtn.disabled = false;
+                submitBtn.innerHTML = "SCRAPE GAMES"; // Reset button text
                 loading.classList.remove('active');
             }
         });
@@ -405,16 +526,16 @@
             if (data.success) {
                 statsContainer.innerHTML = `
                     <div class="stat-card">
+                        <h3>${data.dirty_team || 'N/A'}</h3>
+                        <p>Dirtiest Team Award</p>
+                    </div>
+                    <div class="stat-card">
                         <h3>${data.total_games}</h3>
                         <p>Total Games</p>
                     </div>
                     <div class="stat-card">
-                        <h3>${data.dirty_team}</h3>
-                        <p>Blueberry Bulldogs Award</p>
-                    </div>
-                    <div class="stat-card">
                         <h3>${data.jungle_score}</h3>
-                        <p>Jungle Score</p>
+                        <p>Jungle Score (Avg PIMs)</p>
                     </div>
                 `;
             }
@@ -442,7 +563,7 @@
                         <div class="teams">
                             <div class="team-with-logo">
                                 ${game.away_logo ? `<img class="team-logo" src="${game.away_logo}" alt="${game.away_abbrv} logo">` : ''}
-                                <span>${game.away_team} @ ${game.home_team}</span>
+                                <span>${game.away_team} <br><span style="font-size:0.6em; color:#999; font-weight:400;">VS</span><br> ${game.home_team}</span>
                                 ${game.home_logo ? `<img class="team-logo" src="${game.home_logo}" alt="${game.home_abbrv} logo">` : ''}
                             </div>
                         </div>
@@ -453,7 +574,7 @@
                                 <div class="value">${game.away_pims}</div>
                             </div>
                             <div class="pim-item">
-                                <div class="label">Total PIMs</div>
+                                <div class="label">Combined PIMs</div>
                                 <div class="value total-pims">${game.total_pims}</div>
                             </div>
                             <div class="pim-item">
@@ -480,14 +601,14 @@
                     </div>
                 `).join('');
             } else if (data.success) {
-                gamesContainer.innerHTML = '<div class="no-games">No games found for this date.</div>';
+                gamesContainer.innerHTML = '<div class="no-games">No games scheduled for this date.</div>';
             }
 
             results.classList.add('active');
         }
 
-        // Set today's date as default using local timezone (avoids UTC shift)
-        const todayLocal = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+        // Set today's date as default using local timezone
+        const todayLocal = new Date().toLocaleDateString('en-CA');
         dateInput.value = todayLocal;
     </script>
 </body>
