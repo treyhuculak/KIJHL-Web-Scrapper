@@ -1,15 +1,17 @@
 from flask import Flask, render_template, request, jsonify
-from WebScraper import WebScraper, fetch_game_api, fetch_team_logos
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
+from datetime import datetime
+
+# Import new API-based functions
+from getgames import get_game_ids_by_date, fetch_game_api, fetch_team_logos
 
 app = Flask(__name__)
 
 def scrape_games(date):
-    """Scrape games for a given date and return results"""
-    url = f"https://www.kijhl.ca/stats/daily-schedule/{date}?league=1&season=65&division=-1"
-    
-    scraper = WebScraper(url)
+    """
+    Retrieve game data for a given date using the API.
+    """
     results = {
         'games': [],
         'errors': [],
@@ -20,44 +22,24 @@ def scrape_games(date):
         'dirty_team': ""
     }
     
+    start_time = time.time()
+    
     try:
-        # Fetch the main schedule page
-        scraper.fetch_page(wait_for_class="ht-daily-sch-page")
-        soup = scraper.parse_page()
-        
-        if soup is None:
-            results['errors'].append("Failed to parse page")
-            return results
-        
-        # Find the schedule
-        schedule_div = soup.find('div', class_='ht-daily-sch-page')
-        if schedule_div:
-            schedule_div = schedule_div.find('div', class_='ng-hide')
-        
-        if not schedule_div:
-            results['errors'].append("Could not find schedule container")
-            return results
-        
-        # Find all game boxes
-        game_boxes = schedule_div.find_all('div', class_='ht-sch-box')
-        game_numbers = [box.get('id', 'N/A') for box in game_boxes]
+        # 1. Fetch Game IDs directly from API (Replaces Selenium/BS4)
+        # Note: Season 65 is hardcoded in getgames defaults, can be passed if needed
+        game_numbers = get_game_ids_by_date(date)
         results['total_games'] = len(game_numbers)
         
-        if len(game_numbers) == 0:
+        if not game_numbers:
             results['errors'].append("No games found for this date")
+            results['elapsed_time'] = time.time() - start_time
             return results
-        
-        # Load team logos once for the season (65 is currently used in URL)
-        logo_map = {}
-        try:
-            logo_map = fetch_team_logos(65)
-        except Exception:
-            logo_map = {}
-        
-        # Fetch game details via API
-        start_time = time.time()
-        max_workers = min(20, len(game_numbers))
 
+        # 2. Fetch Logos (Once per request, or could be cached globally)
+        logo_map = fetch_team_logos()
+        
+        # 3. Fetch Game Details (Concurrently)
+        max_workers = min(20, len(game_numbers))
         dirtiest_team_name = ""
         dirtiest_team_pims = 0
         
@@ -96,27 +78,23 @@ def scrape_games(date):
                     })
                     results['jungle_score'] += data['total_pims']
 
-                    # Returns the dirtiest team
-                    max_pims = max(away_pims, home_pims)
-                    if max_pims > dirtiest_team_pims:
+                    # Calculate dirtiest team
+                    max_pims_in_game = max(away_pims, home_pims)
+                    if max_pims_in_game > dirtiest_team_pims:
                         dirtiest_team_name = away_abbrv if away_pims > home_pims else home_abbrv
-                        dirtiest_team_pims = max_pims
+                        dirtiest_team_pims = max_pims_in_game
         
-        results['elapsed_time'] = time.time() - start_time
-
-        # Calculate Jungle Score (Average PIMs per game that day)
-        results['jungle_score'] = round(results['jungle_score'] / results['total_games'], 1)
-
-        # Gets the team with the most PIMs that day
+        # 4. Final Calculations
+        if results['total_games'] > 0:
+            results['jungle_score'] = round(results['jungle_score'] / results['total_games'], 1)
+        
         results['dirty_team'] = dirtiest_team_name
-
         results['success'] = True
         
     except Exception as e:
-        results['errors'].append(f"An error occurred: {str(e)}")
-    finally:
-        scraper.close()
+        results['errors'].append(f"An application error occurred: {str(e)}")
     
+    results['elapsed_time'] = time.time() - start_time
     return results
 
 @app.route('/')
@@ -135,7 +113,7 @@ def api_scrape():
     
     # Validate date format (YYYY-MM-DD)
     try:
-        time.strptime(date, '%Y-%m-%d')
+        datetime.strptime(date, '%Y-%m-%d')
     except ValueError:
         return jsonify({'error': 'Invalid date format. Please use YYYY-MM-DD'}), 400
     
@@ -144,4 +122,3 @@ def api_scrape():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
-
