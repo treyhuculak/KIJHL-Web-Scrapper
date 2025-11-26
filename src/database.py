@@ -29,12 +29,12 @@ class DatabaseManager:
 
         # Process Officials
         officials = []
-        for ref in game_data.get('referees', []):
-            if ref and ref != "Unknown Unknown":
-                officials.append({'name': ref, 'type': 'referee'})
-        for line in game_data.get('linesmen', []):
-            if line and line != "Unknown Unknown":
-                officials.append({'name': line, 'type': 'linesman'})
+        for ref_name in game_data.get('referees', []):
+            if ref_name and ref_name.strip() not in ["Unknown", "Unknown Unknown"]:
+                officials.append({'name': ref_name.strip(), 'type': 'referee'})
+        for line_name in game_data.get('linesmen', []):
+            if line_name and line_name.strip() not in ["Unknown", "Unknown Unknown"]:
+                officials.append({'name': line_name.strip(), 'type': 'linesman'})
 
         batch = self.db.batch()
         
@@ -66,9 +66,10 @@ class DatabaseManager:
         batch.commit()
         return True
 
-    def get_leaderboard(self, role='all', sort_by='total_pims', order='desc', season_id=65):
+    def get_leaderboard(self, role='all', sort_by='total_pims', order='desc', season_id=65, games_called_threshold=5):
         """
         Fetches filtered and sorted leaderboard.
+        Now filters games_called in Python to avoid needing a new index.
         """
         query = self.db.collection('officials').where('season_id', '==', season_id)
 
@@ -84,4 +85,11 @@ class DatabaseManager:
         query = query.order_by(sort_by, direction=direction)
 
         docs = query.stream()
-        return [doc.to_dict() for doc in docs]
+        
+        # Post-query filtering in Python
+        results = [doc.to_dict() for doc in docs]
+        
+        if games_called_threshold > 0:
+            results = [r for r in results if r.get('games_called', 0) >= games_called_threshold]
+            
+        return results

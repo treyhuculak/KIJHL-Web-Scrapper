@@ -10,6 +10,30 @@ from getgames import get_game_ids_by_date, fetch_game_api, fetch_team_logos
 app = Flask(__name__)
 db_manager = DatabaseManager()
 
+def get_season_id_by_date(date_str):
+    """
+    Determine the season ID based on the provided date.
+    This is a placeholder function and should be implemented
+    based on actual season date ranges.
+    """
+    season_start_dates = {
+        '2025-2026 (Playoffs)'  : ['2026-02-19', 66],
+        '2025-2026 (Reg Season)': ['2025-09-19', 65],
+        '2024-2025 (Playoffs)'  : ['2025-02-28', 63],
+        '2024-2025 (Reg Season)': ['2024-09-20', 61],
+        '2023-2024 (Playoffs)'  : ['2024-02-23', 59],
+        '2023-2024 (Reg Season)': ['2023-09-22', 56],
+        '2022-2023 (Playoffs)'  : ['2023-02-17', 54],
+        '2022-2023 (Reg Season)': ['2022-09-23', 52],
+        '2021-2022 (Playoffs)'  : ['2022-02-22', 51],
+        '2021-2022 (Reg Season)': ['2021-10-01', 49]
+    }
+    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+    for season, (start_date, season_id) in season_start_dates.items():
+        if date_obj >= datetime.strptime(start_date, '%Y-%m-%d'):
+            return season_id
+    return None
+
 def scrape_games(date):
     """
     Retrieve game data for a given date using the API.
@@ -27,9 +51,14 @@ def scrape_games(date):
     start_time = time.time()
     
     try:
-        # 1. Fetch Game IDs directly from API (Replaces Selenium/BS4)
-        # Note: Season 65 is hardcoded in getgames defaults, can be passed if needed
-        game_numbers = get_game_ids_by_date(date)
+        # 1. Fetch Game IDs directly from API
+        season_id = get_season_id_by_date(date)
+        if not season_id:
+            results['errors'].append("No season found for the given date")
+            results['elapsed_time'] = time.time() - start_time
+            return results
+
+        game_numbers = get_game_ids_by_date(date, season_id=season_id)
         results['total_games'] = len(game_numbers)
         
         if not game_numbers:
@@ -114,21 +143,27 @@ def leaderboard():
     role = request.args.get('role', 'all')
     sort = request.args.get('sort', 'pims') # 'pims' or 'avg'
     order = request.args.get('order', 'desc') # 'desc' or 'asc'
+    season = request.args.get('season', '65') # Default to '65' if not provided
+    games_called = request.args.get('games_called', 5, type=int) # Default to 5
     
     # Map frontend simple names to DB field names
     sort_field = 'avg_pims' if sort == 'avg' else 'total_pims'
     
     officials = db_manager.get_leaderboard(
-        role=role, 
-        sort_by=sort_field, 
-        order=order
+        role=role,
+        sort_by=sort_field,
+        order=order,
+        season_id=int(season),
+        games_called_threshold=games_called
     )
     
-    return render_template('leaderboard.html', 
-                           officials=officials, 
-                           current_role=role, 
-                           current_sort=sort, 
-                           current_order=order)
+    return render_template('leaderboard.html',
+                           officials=officials,
+                           current_role=role,
+                           current_sort=sort,
+                           current_order=order,
+                           current_season=season,
+                           current_games_called=games_called)
 
 @app.route('/api/scrape', methods=['POST'])
 def api_scrape():
@@ -152,15 +187,15 @@ def api_scrape():
 def daily_update():
     """
     Route specifically for Cloud Scheduler.
-    Scrapes games for the DATE BEFORE today (yesterday).
+    Scrapes games for todays date.
     """
-    # Get yesterday's date
-    yesterday = datetime.now() - timedelta(days=1)
+    yesterday = datetime.now()
     date_str = yesterday.strftime('%Y-%m-%d')
     
     print(f"Running automated update for: {date_str}")
     
     # Run the scraper (which now saves to DB automatically)
+
     results = scrape_games(date_str)
     
     return jsonify({

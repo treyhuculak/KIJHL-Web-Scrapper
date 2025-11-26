@@ -123,15 +123,15 @@
         }
 
         .role-referee {
-            background: #e0e0e0;
+            background: #ff9d9d;
             color: #333;
-            border: 1px solid #999;
+            border: 1px solid #b85a5a;
         }
 
         .role-linesman {
-            background: #fff;
-            color: #999;
-            border: 1px solid #ddd;
+            background: #dbdbdb;
+            color: #4d4d4d;
+            border: 1px solid #a0a0a0;
         }
 
         .stat-val {
@@ -183,6 +183,35 @@
                         <option value="asc" {% if current_order=='asc' %}selected{% endif %}>Lowest First</option>
                     </select>
                 </div>
+
+                <div>
+                    <label style="font-size: 0.8em; font-weight: bold; display: block;">SEASON</label>
+                    <select name="season" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="66" {% if current_season=='66' %}selected{% endif %}>2025-2026 Playoffs</option>
+                        <option value="65" {% if current_season=='65' %}selected{% endif %}>2025-2026 Regular
+                            Season</option>
+                        <option value="63" {% if current_season=='63' %}selected{% endif %}>2024-2025 Playoffs</option>
+                        <option value="61" {% if current_season=='61' %}selected{% endif %}>2024-2025 Regular
+                            Season</option>
+                        <option value="59" {% if current_season=='59' %}selected{% endif %}>2023-2024 Playoffs</option>
+                        <option value="56" {% if current_season=='56' %}selected{% endif %}>2023-2024 Regular
+                            Season</option>
+                        <option value="54" {% if current_season=='54' %}selected{% endif %}>2022-2023 Playoffs</option>
+                        <option value="52" {% if current_season=='52' %}selected{% endif %}>2022-2023 Regular
+                            Season</option>
+                        <option value="51" {% if current_season=='51' %}selected{% endif %}>2021-2022 Playoffs</option>
+                        <option value="49" {% if current_season=='49' %}selected{% endif %}>2021-2022 Regular
+                            Season</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="font-size: 0.8em; font-weight: bold; display: block;">GAMES CALLED</label>
+                    <input type="number" name="games_called" min="0" value="{{ current_games_called }}"
+                        style="width: 80px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                </div>
+
+
 
                 <div style="margin-left: auto;">
                     <button type="submit"

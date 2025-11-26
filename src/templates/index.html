@@ -81,6 +81,29 @@
             font-weight: 500;
         }
 
+        .leaderboard-button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 20px;
+            font-size: 1em;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            color: var(--ref-white);
+            background-color: var(--ref-red);
+            border: 2px solid var(--ref-black);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        .leaderboard-button:hover {
+            background-color: var(--ref-black);
+            color: var(--ref-white);
+            border-color: var(--ref-red);
+        }
+
         /* --- Input Section --- */
         .card {
             background: var(--ref-white);
@@ -410,6 +433,12 @@
 
         /* Mobile tweaks */
         @media (max-width: 600px) {
+            .leaderboard-button {
+                width: 100%;
+                padding: 15px;
+                font-size: 1.1em;
+            }
+
             .header h1 {
                 font-size: 1.8em;
             }
@@ -437,6 +466,7 @@
         <div class="header">
             <h1>🏒 KIJHL Game Scraper</h1>
             <p>Official Game Results & Penalty Tracker</p>
+            <a href="/leaderboard" class="leaderboard-button">View Gameboard</a>
         </div>
 
         <div class="card">
