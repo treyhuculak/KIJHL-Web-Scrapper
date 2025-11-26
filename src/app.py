@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from database import DatabaseManager
 import time
 from datetime import datetime, timedelta
+import os
 
 # Import new API-based functions
 from getgames import get_game_ids_by_date, fetch_game_api, fetch_team_logos
@@ -147,7 +148,12 @@ def leaderboard():
     games_called = request.args.get('games_called', 5, type=int) # Default to 5
     
     # Map frontend simple names to DB field names
-    sort_field = 'avg_pims' if sort == 'avg' else 'total_pims'
+    sort_map = {
+        'pims': 'total_pims',
+        'avg': 'avg_pims',
+        'games': 'games_called'
+    }
+    sort_field = sort_map.get(sort, 'total_pims')
     
     officials = db_manager.get_leaderboard(
         role=role,
@@ -157,11 +163,15 @@ def leaderboard():
         games_called_threshold=games_called
     )
     
+    # Determine the next order for the links in the template
+    next_order = 'asc' if order == 'desc' else 'desc'
+    
     return render_template('leaderboard.html',
                            officials=officials,
                            current_role=role,
                            current_sort=sort,
                            current_order=order,
+                           next_order=next_order,
                            current_season=season,
                            current_games_called=games_called)
 
@@ -205,4 +215,5 @@ def daily_update():
     })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(debug=True,host='0.0.0.0', port=port)

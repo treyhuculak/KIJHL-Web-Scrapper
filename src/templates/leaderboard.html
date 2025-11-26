@@ -144,6 +144,71 @@
         }
 
         /* Highlight high PIMs */
+
+        /* Responsive Design */
+        th.sortable a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+
+        th.sortable a:hover {
+            text-decoration: underline;
+        }
+
+        .sort-indicator {
+            display: inline-block;
+            margin-left: 5px;
+            color: #888;
+            /* Default color for indicators */
+        }
+
+        .sort-indicator .active {
+            color: white;
+            /* Color for the active sort indicator */
+        }
+
+        @media screen and (max-width: 768px) {
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-bar form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-bar form>div {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .filter-bar form div[style="margin-left: auto;"] {
+                margin-left: 0;
+            }
+
+            .filter-toggle {
+                display: block;
+                width: 100%;
+                padding: 10px;
+                background: var(--ref-black);
+                color: white;
+                border: none;
+                border-radius: 4px;
+                font-weight: bold;
+                cursor: pointer;
+                margin-bottom: 10px;
+            }
+
+            .collapsible-filters {
+                display: none;
+            }
+
+            .table-card {
+                overflow-x: auto;
+            }
+        }
     </style>
 </head>
 
@@ -154,10 +219,12 @@
             <a href="/" class="nav-link">← Back to Scraper</a>
         </div>
 
-        <div class="filter-bar"
+        <button class="filter-toggle" style="display: none;">Show/Hide Filters</button>
+
+        <div class="filter-bar collapsible-filters"
             style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; border-left: 5px solid var(--ref-black);">
             <form action="/leaderboard" method="GET"
-                style="display: flex; gap: 10px; width: 100%; align-items: center;">
+                style="display: flex; gap: 10px; width: 100%; align-items: center; flex-wrap: wrap;">
 
                 <div>
                     <label style="font-size: 0.8em; font-weight: bold; display: block;">OFFICIAL TYPE</label>
@@ -168,50 +235,33 @@
                     </select>
                 </div>
 
-                <div>
-                    <label style="font-size: 0.8em; font-weight: bold; display: block;">SORT BY</label>
-                    <select name="sort" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
-                        <option value="pims" {% if current_sort=='pims' %}selected{% endif %}>Total PIMs</option>
-                        <option value="avg" {% if current_sort=='avg' %}selected{% endif %}>Avg PIMs/Game</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label style="font-size: 0.8em; font-weight: bold; display: block;">ORDER</label>
-                    <select name="order" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
-                        <option value="desc" {% if current_order=='desc' %}selected{% endif %}>Highest First</option>
-                        <option value="asc" {% if current_order=='asc' %}selected{% endif %}>Lowest First</option>
-                    </select>
-                </div>
 
                 <div>
                     <label style="font-size: 0.8em; font-weight: bold; display: block;">SEASON</label>
                     <select name="season" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
-                        <option value="66" {% if current_season=='66' %}selected{% endif %}>2025-2026 Playoffs</option>
-                        <option value="65" {% if current_season=='65' %}selected{% endif %}>2025-2026 Regular
+                        <option value="66" {% if current_season=='66' %}selected{% endif %}>2025-26 Playoffs</option>
+                        <option value="65" {% if current_season=='65' %}selected{% endif %}>2025-26 Regular
                             Season</option>
-                        <option value="63" {% if current_season=='63' %}selected{% endif %}>2024-2025 Playoffs</option>
-                        <option value="61" {% if current_season=='61' %}selected{% endif %}>2024-2025 Regular
+                        <option value="63" {% if current_season=='63' %}selected{% endif %}>2024-25 Playoffs</option>
+                        <option value="61" {% if current_season=='61' %}selected{% endif %}>2024-25 Regular
                             Season</option>
-                        <option value="59" {% if current_season=='59' %}selected{% endif %}>2023-2024 Playoffs</option>
-                        <option value="56" {% if current_season=='56' %}selected{% endif %}>2023-2024 Regular
+                        <option value="59" {% if current_season=='59' %}selected{% endif %}>2023-24 Playoffs</option>
+                        <option value="56" {% if current_season=='56' %}selected{% endif %}>2023-24 Regular
                             Season</option>
-                        <option value="54" {% if current_season=='54' %}selected{% endif %}>2022-2023 Playoffs</option>
-                        <option value="52" {% if current_season=='52' %}selected{% endif %}>2022-2023 Regular
+                        <option value="54" {% if current_season=='54' %}selected{% endif %}>2022-23 Playoffs</option>
+                        <option value="52" {% if current_season=='52' %}selected{% endif %}>2022-23 Regular
                             Season</option>
-                        <option value="51" {% if current_season=='51' %}selected{% endif %}>2021-2022 Playoffs</option>
-                        <option value="49" {% if current_season=='49' %}selected{% endif %}>2021-2022 Regular
+                        <option value="51" {% if current_season=='51' %}selected{% endif %}>2021-22 Playoffs</option>
+                        <option value="49" {% if current_season=='49' %}selected{% endif %}>2021-22 Regular
                             Season</option>
                     </select>
                 </div>
 
                 <div>
-                    <label style="font-size: 0.8em; font-weight: bold; display: block;">GAMES CALLED</label>
+                    <label style="font-size: 0.8em; font-weight: bold; display: block;">MIN. GAMES</label>
                     <input type="number" name="games_called" min="0" value="{{ current_games_called }}"
-                        style="width: 80px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                        style="width: 40px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
                 </div>
-
-
 
                 <div style="margin-left: auto;">
                     <button type="submit"
@@ -228,9 +278,39 @@
                         <th>#</th>
                         <th>Official</th>
                         <th>Role</th>
-                        <th>Games Called</th>
-                        <th>Total PIMs</th>
-                        <th>Avg PIMs/Game</th>
+                        <th class="sortable">
+                            <a
+                                href="{{ url_for('leaderboard', sort='games', order=next_order if current_sort == 'games' else 'desc', role=current_role, season=current_season, games_called=current_games_called) }}">
+                                Games Called
+                                <span class="sort-indicator">
+                                    <span
+                                        class="dir-up {% if current_sort == 'games' and current_order == 'asc' %}active{% endif %}">▲</span><span
+                                        class="dir-down {% if current_sort == 'games' and current_order == 'desc' %}active{% endif %}">▼</span>
+                                </span>
+                            </a>
+                        </th>
+                        <th class="sortable">
+                            <a
+                                href="{{ url_for('leaderboard', sort='pims', order=next_order if current_sort == 'pims' else 'desc', role=current_role, season=current_season, games_called=current_games_called) }}">
+                                Total PIMs
+                                <span class="sort-indicator">
+                                    <span
+                                        class="dir-up {% if current_sort == 'pims' and current_order == 'asc' %}active{% endif %}">▲</span><span
+                                        class="dir-down {% if current_sort == 'pims' and current_order == 'desc' %}active{% endif %}">▼</span>
+                                </span>
+                            </a>
+                        </th>
+                        <th class="sortable">
+                            <a
+                                href="{{ url_for('leaderboard', sort='avg', order=next_order if current_sort == 'avg' else 'desc', role=current_role, season=current_season, games_called=current_games_called) }}">
+                                Avg PIMs/Game
+                                <span class="sort-indicator">
+                                    <span
+                                        class="dir-up {% if current_sort == 'avg' and current_order == 'asc' %}active{% endif %}">▲</span><span
+                                        class="dir-down {% if current_sort == 'avg' and current_order == 'desc' %}active{% endif %}">▼</span>
+                                </span>
+                            </a>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -252,6 +332,54 @@
             </table>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Responsive Filters ---
+            const filterToggle = document.querySelector('.filter-toggle');
+            const collapsibleFilters = document.querySelector('.collapsible-filters');
+
+            function toggleFiltersBasedOnWidth() {
+                if (window.innerWidth <= 768) {
+                    filterToggle.style.display = 'block';
+                    collapsibleFilters.style.display = collapsibleFilters.classList.contains('open') ? 'flex' : 'none';
+                } else {
+                    filterToggle.style.display = 'none';
+                    collapsibleFilters.style.display = 'flex';
+                }
+            }
+
+            filterToggle.addEventListener('click', function () {
+                collapsibleFilters.classList.toggle('open');
+                if (collapsibleFilters.style.display === 'none') {
+                    collapsibleFilters.style.display = 'flex';
+                } else {
+                    collapsibleFilters.style.display = 'none';
+                }
+            });
+
+            window.addEventListener('resize', toggleFiltersBasedOnWidth);
+            toggleFiltersBasedOnWidth(); // Initial check
+
+            // --- Maintain Scroll Position ---
+            const tableCard = document.querySelector('.table-card');
+            const sortableLinks = document.querySelectorAll('th.sortable a');
+
+            // Restore scroll position on page load
+            const savedScrollLeft = sessionStorage.getItem('leaderboardScrollLeft');
+            if (savedScrollLeft !== null) {
+                tableCard.scrollLeft = parseInt(savedScrollLeft, 10);
+                sessionStorage.removeItem('leaderboardScrollLeft'); // Clean up
+            }
+
+            // Save scroll position before sorting
+            sortableLinks.forEach(link => {
+                link.addEventListener('click', function () {
+                    sessionStorage.setItem('leaderboardScrollLeft', tableCard.scrollLeft);
+                });
+            });
+        });
+
+    </script>
 </body>
 
 </html>
