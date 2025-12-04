@@ -2,7 +2,8 @@ from flask import Flask, render_template, request, jsonify
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from database import DatabaseManager
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, date
+import pytz
 import os
 
 # Import new API-based functions
@@ -199,8 +200,8 @@ def daily_update():
     Route specifically for Cloud Scheduler.
     Scrapes games for todays date.
     """
-    yesterday = datetime.now()
-    date_str = yesterday.strftime('%Y-%m-%d')
+    today = datetime.now(pytz.timezone('America/Vancouver')).date()
+    date_str = today.strftime('%Y-%m-%d')
     
     print(f"Running automated update for: {date_str}")
     
