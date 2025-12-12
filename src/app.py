@@ -6,6 +6,8 @@ from datetime import datetime, date
 import pytz
 import os
 
+# gcloud builds submit --tag us-west1-docker.pkg.dev/kijhl-app/kijhl-app-repo/kijhl-img:v4.2
+
 # Import new API-based functions
 from getgames import get_game_ids_by_date, fetch_game_api, fetch_team_logos
 
@@ -34,7 +36,7 @@ def get_season_id_by_date(date_str):
     for season, (start_date, season_id) in season_start_dates.items():
         if date_obj >= datetime.strptime(start_date, '%Y-%m-%d'):
             return season_id
-    return None
+    return 0
 
 def scrape_games(date):
     """
@@ -205,9 +207,15 @@ def daily_update():
     
     print(f"Running automated update for: {date_str}")
     
-    # Run the scraper (which now saves to DB automatically)
-
     results = scrape_games(date_str)
+
+    if results['success'] and results['games']:
+        print(f"   > Found {len(results['games'])} games. Saving...")
+        season_id_actual = get_season_id_by_date(date_str)
+        for game in results['games']:
+            db_manager.save_game_results(game, season_id=season_id_actual)
+    else:
+        print("   > No games or error.")
     
     return jsonify({
         "status": "success", 
