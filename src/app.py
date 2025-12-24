@@ -143,40 +143,65 @@ def index():
 
 @app.route('/leaderboard')
 def leaderboard():
-    # Get filter params from URL (e.g., ?role=referee&sort=avg)
-    role = request.args.get('role', 'all')
-    sort = request.args.get('sort', 'pims') # 'pims' or 'avg'
-    order = request.args.get('order', 'desc') # 'desc' or 'asc'
-    season = request.args.get('season', '65') # Default to '65' if not provided
-    games_called = request.args.get('games_called', 5, type=int) # Default to 5
+    """
+    Renders the leaderboard page. No filtering/sorting done server-side.
+    All officials data is fetched client-side via /api/officials endpoint.
     
-    # Map frontend simple names to DB field names
-    sort_map = {
-        'pims': 'total_pims',
-        'avg': 'avg_pims',
-        'games': 'games_called'
-    }
-    sort_field = sort_map.get(sort, 'total_pims')
-    
-    officials = db_manager.get_leaderboard(
-        role=role,
-        sort_by=sort_field,
-        order=order,
-        season_id=int(season),
-        games_called_threshold=games_called
-    )
-    
-    # Determine the next order for the links in the template
-    next_order = 'asc' if order == 'desc' else 'desc'
+    FUTURE: To support multiple leagues, add a league parameter and pass to template:
+            league = request.args.get('league', 'kijhl')
+    """
+    # Only pass the selected season to template for initial page load
+    season = request.args.get('season', '65')
     
     return render_template('leaderboard.html',
-                           officials=officials,
-                           current_role=role,
-                           current_sort=sort,
-                           current_order=order,
-                           next_order=next_order,
-                           current_season=season,
-                           current_games_called=games_called)
+                           current_season=season)
+
+@app.route('/api/officials')
+def get_officials():
+    """
+    API endpoint that returns all officials for a given season as JSON.
+    Filtering and sorting is done client-side to minimize database reads.
+    
+    FUTURE: To support multiple leagues, add league parameter:
+            league = request.args.get('league', 'kijhl')
+            officials = db_manager.get_all_officials_for_season(season_id=int(season), league_id=league)
+    """
+    season = request.args.get('season', '65')
+    
+    # Fetch all officials for this season (no filtering/sorting)
+    officials = db_manager.get_all_officials_for_season(season_id=int(season))
+    
+    return jsonify({
+        'officials': officials,
+        'season': season,
+        'count': len(officials)
+    })
+
+@app.route('/api/official/<name>')
+def get_official_stats(name):
+    """API endpoint to get career stats for a specific official"""
+    stats = db_manager.get_official_career_stats(name)
+    
+    # Map season IDs to readable names
+    season_names = {
+        66: '2025-26 Playoffs',
+        65: '2025-26 Regular Season',
+        63: '2024-25 Playoffs',
+        61: '2024-25 Regular Season',
+        59: '2023-24 Playoffs',
+        56: '2023-24 Regular Season',
+        54: '2022-23 Playoffs',
+        52: '2022-23 Regular Season',
+        51: '2021-22 Playoffs',
+        49: '2021-22 Regular Season'
+    }
+    
+    # Add readable season names to each season record
+    for season in stats['seasons']:
+        season_id = season.get('season_id', 0)
+        season['season_name'] = season_names.get(season_id, f'Season {season_id}')
+    
+    return jsonify(stats)
 
 @app.route('/api/scrape', methods=['POST'])
 def api_scrape():

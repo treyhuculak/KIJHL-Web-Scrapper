@@ -168,6 +168,290 @@
             /* Color for the active sort indicator */
         }
 
+        /* Search Bar Styling */
+        .search-container {
+            margin-bottom: 15px;
+            margin-right: 30px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--ref-red);
+        }
+
+        .search-input::placeholder {
+            color: #999;
+        }
+
+        /* Clickable name styling */
+        .name-link {
+            cursor: pointer;
+            color: var(--ref-black);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .name-link:hover {
+            color: var(--ref-red);
+            text-decoration: underline;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        /* Hockey Card Styling */
+        .hockey-card {
+            background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
+            border-radius: 15px;
+            width: 380px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+            border: 3px solid #444;
+        }
+
+        .hockey-card.linesman {
+            border-color: #666;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--ref-red) 0%, #990000 100%);
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px 12px 0 0;
+            position: relative;
+        }
+
+        .hockey-card.linesman .card-header {
+            background: linear-gradient(135deg, #444 0%, #222 100%);
+        }
+
+        .card-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .card-close:hover {
+            opacity: 1;
+        }
+
+        .profile-picture {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #e0e0e0, #c0c0c0);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .profile-picture svg {
+            width: 60px;
+            height: 60px;
+            fill: #888;
+        }
+
+        .card-name {
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-role {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Section styling */
+        .stats-section {
+            margin-bottom: 20px;
+        }
+
+        .stats-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-divider {
+            border: none;
+            margin: 10px 0;
+        }
+
+        .seasons-title {
+            color: var(--ref-red);
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .hockey-card.linesman .seasons-title {
+            color: #888;
+        }
+
+        /* Table header for stats */
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #444;
+            color: #666;
+            font-size: 0.7em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stats-header-season {
+            flex: 1;
+        }
+
+        .stats-header-cols {
+            display: flex;
+            gap: 20px;
+            text-align: center;
+        }
+
+        .stats-header-col {
+            width: 45px;
+        }
+
+        .season-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+            color: #ddd;
+        }
+
+        .season-row:last-child {
+            border-bottom: none;
+        }
+
+        .season-name {
+            flex: 1;
+            font-weight: 500;
+            font-size: 0.85em;
+        }
+
+        .season-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9em;
+        }
+
+        .season-stat {
+            width: 45px;
+            text-align: center;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* Career Totals */
+        .career-totals {
+            background: linear-gradient(135deg, #333 0%, #222 100%);
+            margin: 10px -20px;
+            padding: 15px 20px;
+            border-top: 2px solid var(--ref-red);
+        }
+
+        .hockey-card.linesman .career-totals {
+            border-top-color: #666;
+        }
+
+        .career-totals.final {
+            margin-bottom: -20px;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .career-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .career-label {
+            color: var(--ref-red);
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .hockey-card.linesman .career-label {
+            color: #888;
+        }
+
+        .career-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .career-stat {
+            width: 45px;
+            text-align: center;
+        }
+
+        .career-stat-value {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: white;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
         @media screen and (max-width: 768px) {
             .filter-bar {
                 flex-direction: column;
@@ -208,6 +492,16 @@
             .table-card {
                 overflow-x: auto;
             }
+
+            .hockey-card {
+                width: 95%;
+                max-width: 380px;
+                margin: 10px;
+            }
+
+            .career-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
@@ -221,50 +515,53 @@
 
         <button class="filter-toggle" style="display: none;">Show/Hide Filters</button>
 
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input type="text" id="officialSearch" class="search-input"
+                placeholder="🔍 Search for an official by name...">
+        </div>
+
         <div class="filter-bar collapsible-filters"
             style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; border-left: 5px solid var(--ref-black);">
-            <form action="/leaderboard" method="GET"
+            <form id="filterForm" onsubmit="return false;"
                 style="display: flex; gap: 10px; width: 100%; align-items: center; flex-wrap: wrap;">
 
                 <div>
                     <label style="font-size: 0.8em; font-weight: bold; display: block;">OFFICIAL TYPE</label>
-                    <select name="role" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
-                        <option value="all" {% if current_role=='all' %}selected{% endif %}>All Officials</option>
-                        <option value="referee" {% if current_role=='referee' %}selected{% endif %}>Referees</option>
-                        <option value="linesman" {% if current_role=='linesman' %}selected{% endif %}>Linesmen</option>
+                    <select name="role" id="filterRole"
+                        style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="all">All Officials</option>
+                        <option value="referee">Referees</option>
+                        <option value="linesman">Linesmen</option>
                     </select>
                 </div>
 
 
                 <div>
                     <label style="font-size: 0.8em; font-weight: bold; display: block;">SEASON</label>
-                    <select name="season" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
-                        <option value="66" {% if current_season=='66' %}selected{% endif %}>2025-26 Playoffs</option>
-                        <option value="65" {% if current_season=='65' %}selected{% endif %}>2025-26 Regular
-                            Season</option>
-                        <option value="63" {% if current_season=='63' %}selected{% endif %}>2024-25 Playoffs</option>
-                        <option value="61" {% if current_season=='61' %}selected{% endif %}>2024-25 Regular
-                            Season</option>
-                        <option value="59" {% if current_season=='59' %}selected{% endif %}>2023-24 Playoffs</option>
-                        <option value="56" {% if current_season=='56' %}selected{% endif %}>2023-24 Regular
-                            Season</option>
-                        <option value="54" {% if current_season=='54' %}selected{% endif %}>2022-23 Playoffs</option>
-                        <option value="52" {% if current_season=='52' %}selected{% endif %}>2022-23 Regular
-                            Season</option>
-                        <option value="51" {% if current_season=='51' %}selected{% endif %}>2021-22 Playoffs</option>
-                        <option value="49" {% if current_season=='49' %}selected{% endif %}>2021-22 Regular
-                            Season</option>
+                    <select name="season" id="filterSeason"
+                        style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                        <option value="66">2025-26 Playoffs</option>
+                        <option value="65" selected>2025-26 Regular Season</option>
+                        <option value="63">2024-25 Playoffs</option>
+                        <option value="61">2024-25 Regular Season</option>
+                        <option value="59">2023-24 Playoffs</option>
+                        <option value="56">2023-24 Regular Season</option>
+                        <option value="54">2022-23 Playoffs</option>
+                        <option value="52">2022-23 Regular Season</option>
+                        <option value="51">2021-22 Playoffs</option>
+                        <option value="49">2021-22 Regular Season</option>
                     </select>
                 </div>
 
                 <div>
                     <label style="font-size: 0.8em; font-weight: bold; display: block;">MIN. GAMES</label>
-                    <input type="number" name="games_called" min="0" value="{{ current_games_called }}"
-                        style="width: 40px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                    <input type="number" name="games_called" id="filterMinGames" min="0" value="0"
+                        style="width: 60px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
                 </div>
 
                 <div style="margin-left: auto;">
-                    <button type="submit"
+                    <button type="button" onclick="applyFilters()"
                         style="padding: 10px 20px; background: var(--ref-red); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">APPLY
                         FILTERS</button>
                 </div>
@@ -278,61 +575,389 @@
                         <th>#</th>
                         <th>Official</th>
                         <th>Role</th>
-                        <th class="sortable">
-                            <a
-                                href="{{ url_for('leaderboard', sort='games', order=next_order if current_sort == 'games' else 'desc', role=current_role, season=current_season, games_called=current_games_called) }}">
+                        <th class="sortable" onclick="sortTable('games')">
+                            <a href="javascript:void(0);">
                                 Games Called
-                                <span class="sort-indicator">
-                                    <span
-                                        class="dir-up {% if current_sort == 'games' and current_order == 'asc' %}active{% endif %}">▲</span><span
-                                        class="dir-down {% if current_sort == 'games' and current_order == 'desc' %}active{% endif %}">▼</span>
+                                <span class="sort-indicator" id="sort-games">
+                                    <span class="dir-up">▲</span><span class="dir-down active">▼</span>
                                 </span>
                             </a>
                         </th>
-                        <th class="sortable">
-                            <a
-                                href="{{ url_for('leaderboard', sort='pims', order=next_order if current_sort == 'pims' else 'desc', role=current_role, season=current_season, games_called=current_games_called) }}">
+                        <th class="sortable" onclick="sortTable('pims')">
+                            <a href="javascript:void(0);">
                                 Total PIMs
-                                <span class="sort-indicator">
-                                    <span
-                                        class="dir-up {% if current_sort == 'pims' and current_order == 'asc' %}active{% endif %}">▲</span><span
-                                        class="dir-down {% if current_sort == 'pims' and current_order == 'desc' %}active{% endif %}">▼</span>
+                                <span class="sort-indicator" id="sort-pims">
+                                    <span class="dir-up">▲</span><span class="dir-down">▼</span>
                                 </span>
                             </a>
                         </th>
-                        <th class="sortable">
-                            <a
-                                href="{{ url_for('leaderboard', sort='avg', order=next_order if current_sort == 'avg' else 'desc', role=current_role, season=current_season, games_called=current_games_called) }}">
+                        <th class="sortable" onclick="sortTable('avg')">
+                            <a href="javascript:void(0);">
                                 Avg PIMs/Game
-                                <span class="sort-indicator">
-                                    <span
-                                        class="dir-up {% if current_sort == 'avg' and current_order == 'asc' %}active{% endif %}">▲</span><span
-                                        class="dir-down {% if current_sort == 'avg' and current_order == 'desc' %}active{% endif %}">▼</span>
+                                <span class="sort-indicator" id="sort-avg">
+                                    <span class="dir-up">▲</span><span class="dir-down">▼</span>
                                 </span>
                             </a>
                         </th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% for official in officials %}
+                <tbody id="officialsTableBody">
                     <tr>
-                        <td class="rank">{{ loop.index }}</td>
-                        <td class="name">{{ official.name }}</td>
-                        <td>
-                            <span class="role-badge role-{{ official.role }}">
-                                {{ official.role }}
-                            </span>
+                        <td colspan="6" style="text-align: center; padding: 40px;">
+                            Loading officials data...
                         </td>
-                        <td>{{ official.games_called }}</td>
-                        <td class="stat-val stat-high">{{ official.total_pims }}</td>
-                        <td class="stat-val">{{ official.avg_pims }}</td>
                     </tr>
-                    {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+
+    <!-- Hockey Card Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="hockey-card" id="hockeyCard">
+            <div class="card-header">
+                <button class="card-close" onclick="closeModal()">&times;</button>
+                <div class="profile-picture">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                </div>
+                <h2 class="card-name" id="cardName">Loading...</h2>
+                <div class="card-role" id="cardRole"></div>
+            </div>
+            <div class="card-body">
+                <div id="cardContent">
+                    <div class="loading-spinner">Loading career stats...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // ===== CLIENT-SIDE DATA MANAGEMENT =====
+        // All officials data is stored in memory to minimize database reads
+        // FUTURE: To support multiple leagues, change this to an object: 
+        //         { kijhl: [...], bchl: [...], etc }
+        let allOfficialsData = [];
+        let currentFilters = {
+            role: 'all',
+            minGames: 0,
+            season: '65',
+            sort: 'games',
+            order: 'desc'
+        };
+
+        // Load officials data from API on page load
+        async function loadOfficialsData(season) {
+            try {
+                // FUTURE: Add league parameter: `/api/officials?season=${season}&league=${league}`
+                const response = await fetch(`/api/officials?season=${season}`);
+                const data = await response.json();
+
+                allOfficialsData = data.officials;
+                console.log(`Loaded ${allOfficialsData.length} officials for season ${season}`);
+
+                // Apply initial display
+                applyFilters();
+            } catch (error) {
+                console.error('Error loading officials data:', error);
+                document.getElementById('officialsTableBody').innerHTML =
+                    '<tr><td colspan="6" style="text-align: center; padding: 40px; color: red;">Error loading data. Please refresh.</td></tr>';
+            }
+        }
+
+        // Apply filters and sorting, then render table
+        function applyFilters() {
+            // Get current filter values
+            currentFilters.role = document.getElementById('filterRole').value;
+            currentFilters.minGames = parseInt(document.getElementById('filterMinGames').value) || 0;
+            currentFilters.season = document.getElementById('filterSeason').value;
+
+            // Check if season changed - need to reload data
+            const previousSeason = allOfficialsData.length > 0 ? allOfficialsData[0].season_id : null;
+            if (previousSeason && previousSeason != currentFilters.season) {
+                loadOfficialsData(currentFilters.season);
+                return;
+            }
+
+            // Filter the data
+            let filtered = allOfficialsData.filter(official => {
+                // Role filter
+                if (currentFilters.role !== 'all' && official.role !== currentFilters.role) {
+                    return false;
+                }
+
+                // Min games filter
+                if (official.games_called < currentFilters.minGames) {
+                    return false;
+                }
+
+                // Search filter (from search box)
+                const searchTerm = document.getElementById('officialSearch').value.toLowerCase();
+                if (searchTerm && !official.name.toLowerCase().includes(searchTerm)) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            // Sort the data
+            sortData(filtered);
+
+            // Render the table
+            renderTable(filtered);
+        }
+
+        // Sort data based on current sort settings
+        function sortData(data) {
+            const sortField = currentFilters.sort;
+            const order = currentFilters.order;
+
+            data.sort((a, b) => {
+                let aVal, bVal;
+
+                if (sortField === 'games') {
+                    aVal = a.games_called || 0;
+                    bVal = b.games_called || 0;
+                } else if (sortField === 'pims') {
+                    aVal = a.total_pims || 0;
+                    bVal = b.total_pims || 0;
+                } else if (sortField === 'avg') {
+                    aVal = a.avg_pims || 0;
+                    bVal = b.avg_pims || 0;
+                }
+
+                if (order === 'desc') {
+                    return bVal - aVal;
+                } else {
+                    return aVal - bVal;
+                }
+            });
+        }
+
+        // Render the table with filtered/sorted data
+        function renderTable(officials) {
+            const tbody = document.getElementById('officialsTableBody');
+
+            if (officials.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">No officials match the current filters.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            officials.forEach((official, index) => {
+                html += `
+                    <tr>
+                        <td class="rank">${index + 1}</td>
+                        <td class="name">
+                            <span class="name-link" onclick="openOfficialCard('${official.name}', '${official.role}')">
+                                ${official.name}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="role-badge role-${official.role}">
+                                ${official.role}
+                            </span>
+                        </td>
+                        <td>${official.games_called}</td>
+                        <td class="stat-val stat-high">${official.total_pims}</td>
+                        <td class="stat-val">${official.avg_pims}</td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // Handle column sorting clicks
+        function sortTable(column) {
+            // Toggle order if clicking same column
+            if (currentFilters.sort === column) {
+                currentFilters.order = currentFilters.order === 'desc' ? 'asc' : 'desc';
+            } else {
+                currentFilters.sort = column;
+                currentFilters.order = 'desc'; // Default to descending for new column
+            }
+
+            // Update sort indicators
+            updateSortIndicators();
+
+            // Re-apply filters and render
+            applyFilters();
+        }
+
+        // Update visual sort indicators
+        function updateSortIndicators() {
+            // Clear all active states
+            document.querySelectorAll('.sort-indicator span').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Set active state for current sort
+            const indicator = document.getElementById(`sort-${currentFilters.sort}`);
+            if (indicator) {
+                const arrow = currentFilters.order === 'asc' ?
+                    indicator.querySelector('.dir-up') :
+                    indicator.querySelector('.dir-down');
+                if (arrow) arrow.classList.add('active');
+            }
+        }
+
+        // --- Official Search Functionality ---
+        document.getElementById('officialSearch').addEventListener('input', function (e) {
+            // Search is now handled in applyFilters()
+            applyFilters();
+        });
+
+        // --- Modal Functions ---
+        function openOfficialCard(name, role) {
+            const modal = document.getElementById('modalOverlay');
+            const hockeyCard = document.getElementById('hockeyCard');
+            const cardName = document.getElementById('cardName');
+            const cardRole = document.getElementById('cardRole');
+            const cardContent = document.getElementById('cardContent');
+
+            // Apply role-based styling
+            hockeyCard.classList.remove('linesman', 'referee');
+            hockeyCard.classList.add(role);
+
+            // Show modal with loading state
+            modal.classList.add('active');
+            // Prevent background scrolling
+            document.body.style.overflow = 'hidden';
+
+            cardName.textContent = name;
+            cardRole.textContent = role;
+            cardContent.innerHTML = '<div class="loading-spinner">Loading career stats...</div>';
+
+            // Fetch career stats
+            fetch(`/api/official/${encodeURIComponent(name)}`)
+                .then(response => response.json())
+                .then(data => {
+                    renderCardContent(data);
+                })
+                .catch(error => {
+                    cardContent.innerHTML = '<div class="loading-spinner">Error loading stats</div>';
+                    console.error('Error:', error);
+                });
+        }
+
+        function renderCardContent(data) {
+            const cardContent = document.getElementById('cardContent');
+
+            if (!data.seasons || data.seasons.length === 0) {
+                cardContent.innerHTML = '<div class="loading-spinner">No career data available</div>';
+                return;
+            }
+
+            // Separate regular season and playoff seasons
+            const regularSeasons = data.seasons.filter(s => !s.season_name.includes('Playoff'));
+            const playoffSeasons = data.seasons.filter(s => s.season_name.includes('Playoff'));
+
+            // Calculate separate totals
+            const regTotals = calculateTotals(regularSeasons);
+            const playoffTotals = calculateTotals(playoffSeasons);
+
+            let html = '';
+
+            // Regular Season Section
+            if (regularSeasons.length > 0) {
+                html += buildSection('Regular Season', regularSeasons, regTotals, false);
+            }
+
+            // Divider between sections
+            if (regularSeasons.length > 0 && playoffSeasons.length > 0) {
+                html += '<hr class="section-divider">';
+            }
+
+            // Playoffs Section
+            if (playoffSeasons.length > 0) {
+                html += buildSection('Playoffs', playoffSeasons, playoffTotals, true);
+            }
+
+            cardContent.innerHTML = html;
+        }
+
+        function calculateTotals(seasons) {
+            const totalGames = seasons.reduce((sum, s) => sum + (s.games_called || 0), 0);
+            const totalPims = seasons.reduce((sum, s) => sum + (s.total_pims || 0), 0);
+            const avgPims = totalGames > 0 ? (totalPims / totalGames).toFixed(1) : 0;
+            return { games: totalGames, pims: totalPims, avg: avgPims, count: seasons.length };
+        }
+
+        function buildSection(title, seasons, totals, isFinal) {
+            let html = `
+                <div class="stats-section">
+                    <div class="seasons-title">${title}</div>
+                    <div class="stats-header">
+                        <span class="stats-header-season">Season</span>
+                        <div class="stats-header-cols">
+                            <span class="stats-header-col">GP</span>
+                            <span class="stats-header-col">PIMs</span>
+                            <span class="stats-header-col">AVG</span>
+                        </div>
+                    </div>
+            `;
+
+            seasons.forEach(season => {
+                // Clean up season name for display
+                const displayName = season.season_name.replace(' Regular Season', '').replace(' Playoffs', '');
+                html += `
+                    <div class="season-row">
+                        <span class="season-name">${displayName}</span>
+                        <div class="season-stats">
+                            <span class="season-stat">${season.games_called}</span>
+                            <span class="season-stat">${season.total_pims}</span>
+                            <span class="season-stat">${season.avg_pims}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+                <div class="career-totals ${isFinal ? 'final' : ''}">
+                    <div class="career-row">
+                        <span class="career-label">${title == 'Playoffs' ? 'Playoff Totals' : seasons.length + ' KIJHL Seasons'}</span>
+                        <div class="career-stats">
+                            <span class="career-stat">
+                                <div class="career-stat-value">${totals.games}</div>
+                            </span>
+                            <span class="career-stat">
+                                <div class="career-stat-value">${totals.pims}</div>
+                            </span>
+                            <span class="career-stat">
+                                <div class="career-stat-value">${totals.avg}</div>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return html;
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            // Restore background scrolling
+            document.body.style.overflow = '';
+        }
+
+        // Close modal when clicking outside the card
+        document.getElementById('modalOverlay').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', function () {
             // --- Responsive Filters ---
             const filterToggle = document.querySelector('.filter-toggle');
@@ -360,23 +985,18 @@
             window.addEventListener('resize', toggleFiltersBasedOnWidth);
             toggleFiltersBasedOnWidth(); // Initial check
 
-            // --- Maintain Scroll Position ---
-            const tableCard = document.querySelector('.table-card');
-            const sortableLinks = document.querySelectorAll('th.sortable a');
+            // --- Initialize Data Loading ---
+            // Set the selected season from URL or default
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedSeason = urlParams.get('season') || '{{ current_season }}' || '65';
+            document.getElementById('filterSeason').value = selectedSeason;
+            currentFilters.season = selectedSeason;
 
-            // Restore scroll position on page load
-            const savedScrollLeft = sessionStorage.getItem('leaderboardScrollLeft');
-            if (savedScrollLeft !== null) {
-                tableCard.scrollLeft = parseInt(savedScrollLeft, 10);
-                sessionStorage.removeItem('leaderboardScrollLeft'); // Clean up
-            }
+            // Load officials data for the selected season
+            loadOfficialsData(selectedSeason);
 
-            // Save scroll position before sorting
-            sortableLinks.forEach(link => {
-                link.addEventListener('click', function () {
-                    sessionStorage.setItem('leaderboardScrollLeft', tableCard.scrollLeft);
-                });
-            });
+            // Update sort indicators to match default sort
+            updateSortIndicators();
         });
 
     </script>

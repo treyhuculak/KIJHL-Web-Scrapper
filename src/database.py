@@ -66,10 +66,26 @@ class DatabaseManager:
         batch.commit()
         return True
 
+    def get_all_officials_for_season(self, season_id=65):
+        """
+        Fetches ALL officials for a given season without any filtering or sorting.
+        Filtering and sorting will be done client-side to reduce database reads.
+        
+        FUTURE: To support multiple leagues, add a league_id parameter and query:
+                .where('season_id', '==', season_id).where('league_id', '==', league_id)
+        """
+        query = self.db.collection('officials').where('season_id', '==', season_id)
+        docs = query.stream()
+        
+        # Return all officials as-is
+        results = [doc.to_dict() for doc in docs]
+        return results
+    
+    # DEPRECATED: Kept for backwards compatibility if needed
     def get_leaderboard(self, role='all', sort_by='total_pims', order='desc', season_id=65, games_called_threshold=5):
         """
-        Fetches filtered and sorted leaderboard.
-        Now filters games_called in Python to avoid needing a new index.
+        DEPRECATED: Use get_all_officials_for_season() and filter/sort client-side instead.
+        This method still works but performs filtering on the server, causing more database reads.
         """
         query = self.db.collection('officials').where('season_id', '==', season_id)
 
@@ -79,9 +95,6 @@ class DatabaseManager:
 
         # Apply Sorting
         direction = 'DESCENDING' if order == 'desc' else 'ASCENDING'
-        
-        # Firestore Requirement: You might need to create an index in the Firebase Console
-        # for these specific combinations of where() and order_by()
         query = query.order_by(sort_by, direction=direction)
 
         docs = query.stream()
@@ -93,3 +106,37 @@ class DatabaseManager:
             results = [r for r in results if r.get('games_called', 0) >= games_called_threshold]
             
         return results
+
+    def get_official_career_stats(self, official_name):
+        """
+        Fetches all season records for a specific official to build career stats.
+        Returns a list of season stats and calculated career totals.
+        """
+        query = self.db.collection('officials').where('name', '==', official_name)
+        docs = query.stream()
+        
+        seasons = []
+        for doc in docs:
+            data = doc.to_dict()
+            seasons.append(data)
+        
+        # Sort by season_id descending (most recent first)
+        seasons.sort(key=lambda x: x.get('season_id', 0), reverse=True)
+        
+        # Calculate career totals
+        career_totals = {
+            'total_games': sum(s.get('games_called', 0) for s in seasons),
+            'total_pims': sum(s.get('total_pims', 0) for s in seasons),
+            'seasons_count': len(seasons)
+        }
+        
+        if career_totals['total_games'] > 0:
+            career_totals['career_avg'] = int(round(career_totals['total_pims'] / career_totals['total_games'], 1))
+        else:
+            career_totals['career_avg'] = 0
+        
+        return {
+            'name': official_name,
+            'seasons': seasons,
+            'career': career_totals
+        }
