@@ -464,7 +464,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏒 KIJHL Game Scraper</h1>
+            <h1>🏒 KIJHL Game & Referee Tracker</h1>
             <p>Official Game Results & Penalty Tracker</p>
             <a href="/leaderboard" class="leaderboard-button">View Gameboard</a>
         </div>
@@ -512,7 +512,7 @@
 
             // Show loading state
             submitBtn.disabled = true;
-            submitBtn.innerHTML = "SCAPING..."; // Feedback on button
+            submitBtn.innerHTML = "SCRAPING..."; // Feedback on button
             loading.classList.add('active');
             results.classList.remove('active');
             statsContainer.innerHTML = '';
@@ -546,7 +546,7 @@
                 results.classList.add('active');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = "SCRAPE GAMES"; // Reset button text
+                submitBtn.innerHTML = "LOAD GAMES"; // Reset button text
                 loading.classList.remove('active');
             }
         });
