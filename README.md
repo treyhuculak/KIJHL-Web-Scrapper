@@ -1,6 +1,6 @@
 # KIJHL Referee Statistics Tracker
 
-**Live Application**: [**kijhl-img-135337671384.us-west1.run.app**](https://kijhl-img-135337671384.us-west1.run.app)
+**Live Application**: [**KIJHL Game Scraper and Referee Stats Tracker**](https://kijhl-img-135337671384.us-west1.run.app)
 
 A comprehensive web scraping and analytics platform for tracking referee performance statistics in the Kootenay International Junior Hockey League (KIJHL). This application collects game data, calculates penalty minutes per game metrics for officials, and provides an intuitive web interface for querying historical and real-time statistics.
 
@@ -36,50 +36,7 @@ This project demonstrates full-stack development and cloud deployment skills by 
 
 ## 🚀 Getting Started
 
-While the application is live, you can also run it locally.
-
-### Prerequisites
-
-- Python 3.8 or higher
-- A Google Cloud project with a Firebase Service Account key (`serviceAccountKey.json`)
-
-### Installation
-
-1.  **Clone the repository**
-    ```bash
-    git clone https://github.com/treyhuculak/kijhl-web-scraper.git
-    cd kijhl-web-scraper
-    ```
-
-2.  **Create a virtual environment**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
-    ```
-
-3.  **Install dependencies**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Set up Firebase**
-    - Place your `serviceAccountKey.json` file in the `src` directory.
-
-### Running the Application
-
-1.  **Start the Flask server**
-    ```bash
-    python src/app.py
-    ```
-
-2.  **Access the web interface**
-    - Open your browser and navigate to `http://127.0.0.1:8080`
-
-3.  **Initial Data Population (Optional)**
-    - Run the backfill script to populate historical data:
-    ```bash
-    python src/backfill.py
-    ```
+The application is live at [**kijhl-img-135337671384.us-west1.run.app**](https://kijhl-img-135337671384.us-west1.run.app)
 
 ## 🔌 API Endpoints
 
