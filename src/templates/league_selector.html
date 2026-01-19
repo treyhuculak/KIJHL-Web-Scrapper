@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select League - Official Tracker</title>
+    <style>
+        :root {
+            --ref-black: #1a1a1a;
+            --ref-white: #ffffff;
+            --ice-gray: #f0f2f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--ice-gray);
+            background-image: radial-gradient(#e6e6e6 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            background: var(--ref-white);
+            border-top: 5px solid var(--ref-black);
+            padding: 40px 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--ref-black);
+            font-weight: 900;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .leagues-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .league-card {
+            background: var(--ref-white);
+            border-radius: 12px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .league-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .league-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: var(--league-color);
+        }
+
+        .league-card.kijhl {
+            --league-color: #cc0000;
+        }
+
+        .league-card.kijhl::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #cc0000;
+        }
+
+        .league-card.whl {
+            --league-color: #e06900;
+        }
+
+        .league-card.whl::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #e06900;
+        }
+
+        .league-abbreviation {
+            font-size: 3.5em;
+            font-weight: 900;
+            color: var(--league-color);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .league-name {
+            font-size: 1.3em;
+            color: var(--ref-black);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .league-description {
+            font-size: 0.95em;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .league-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: var(--league-color);
+            color: var(--ref-white);
+            border: 2px solid var(--ref-black);
+            border-radius: 6px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+            font-size: 0.95em;
+            letter-spacing: 1px;
+        }
+
+        .league-card:hover .league-button {
+            background: var(--ref-black);
+            border-color: var(--league-color);
+        }
+
+        .coming-soon {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .coming-soon:hover {
+            transform: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .coming-soon .league-button {
+            background: #999;
+            border-color: #666;
+        }
+
+        .coming-soon:hover .league-button {
+            background: #999;
+            border-color: #666;
+        }
+
+        .badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ffc107;
+            color: var(--ref-black);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .leagues-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏒 Official Tracker</h1>
+            <p>Select a league to find and scrape game data</p>
+        </div>
+
+        <div class="leagues-grid">
+            <!-- KIJHL Card -->
+            <a href="/scraper?league=kijhl&season=65" class="league-card kijhl">
+                <div class="league-abbreviation">KIJHL</div>
+                <div class="league-name">Kootenay International<br>Junior Hockey League</div>
+                <div class="league-description">
+                    Find and scrape game data for official tracking
+                </div>
+                <div class="league-button">Find Games</div>
+            </a>
+
+            <!-- WHL Card -->
+            <a href="/scraper?league=whl&season=289" class="league-card whl">
+                <span class="badge">New</span>
+                <div class="league-abbreviation">WHL</div>
+                <div class="league-name">Western Hockey League</div>
+                <div class="league-description">
+                    Find and scrape game data for official tracking
+                </div>
+                <div class="league-button">Find Games</div>
+            </a>
+
+            <!-- Future: OHL Card (Coming Soon) -->
+            <!-- <a href="#" class="league-card coming-soon" style="--league-color: #004B87;">
+                <div class="league-abbreviation">OHL</div>
+                <div class="league-name">Ontario Hockey League</div>
+                <div class="league-description">
+                    Coming Soon
+                </div>
+                <div class="league-button">Coming Soon</div>
+            </a> -->
+        </div>
+    </div>
+</body>
+
+</html>

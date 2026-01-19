@@ -3,6 +3,7 @@ import json
 import re
 from datetime import datetime
 import logging
+from league_config import LEAGUES
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -34,11 +35,18 @@ def _load_jsonp(text: str) -> dict:
         logger.error(f"Error parsing JSONP: {e}")
         return {}
 
-def get_game_ids_by_date(date_str: str, season_id: int = 65) -> list:
+def get_game_ids_by_date(date_str, league, season_id=None) -> list:
     """
     Fetches game IDs for a specific date (YYYY-MM-DD).
+    Uses league-specific HockeyTech API parameters.
     """
     try:
+        # Get league config
+        config = LEAGUES.get(league)
+        if not config:
+            logger.error(f"Unknown league: {league}")
+            return []
+        
         # Parse input date
         dt = datetime.strptime(date_str, '%Y-%m-%d')
         
@@ -47,11 +55,11 @@ def get_game_ids_by_date(date_str: str, season_id: int = 65) -> list:
         day_val = dt.day
         formatted_date = dt.strftime(f"%a, %b {day_val}")
 
-        # 2. Construct URL dynamically based on month
+        # 2. Construct URL dynamically based on month using league config
         # month in API seems to be 1-12. 
         url = (f"https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=schedule"
-               f"&team=-1&season={season_id}&month={dt.month}&location=homeaway&key=2589e0f644b1bb71"
-               f"&client_code=kijhl&site_id=2&league_id=1&conference_id=-1&division_id=-1&lang=en"
+               f"&team=-1&season={season_id}&month={dt.month}&location=homeaway&key={config['api_key']}"
+               f"&client_code={config['client_code']}&site_id=2&league_id=1&conference_id=-1&division_id=-1&lang=en"
                f"&callback=angular.callbacks._3")
 
         response = requests.get(url, headers=BASE_HEADERS, timeout=10)
@@ -80,10 +88,21 @@ def get_game_ids_by_date(date_str: str, season_id: int = 65) -> list:
         logger.error(f"Unexpected error fetching schedule: {e}")
         return []
 
-def fetch_team_logos(season_id: int = 65) -> dict:
-    """Fetch team metadata and return map { abbrv -> logo_url }"""
+def fetch_team_logos(league, season_id: int = 65) -> dict:
+    """Fetch team metadata and return map { abbrv -> logo_url }
+    
+    Args:
+        league: League identifier (e.g., 'kijhl', 'whl')
+        season_id: Season ID for the league
+    """
+    # Get league config
+    config = LEAGUES.get(league)
+    if not config:
+        logger.error(f"Unknown league: {league}")
+        return {}
+    
     url = (f"https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=teamsForSeason"
-           f"&season={season_id}&key=2589e0f644b1bb71&client_code=kijhl&site_id=2"
+           f"&season={season_id}&key={config['api_key']}&client_code={config['client_code']}&site_id=2"
            f"&callback=angular.callbacks._6")
     
     try:
@@ -103,10 +122,21 @@ def fetch_team_logos(season_id: int = 65) -> dict:
         logger.error(f"Error fetching logos: {e}")
         return {}
 
-def fetch_game_api(game_number):
-    """Fetch detailed game stats."""
+def fetch_game_api(game_number, league):
+    """Fetch detailed game stats.
+    
+    Args:
+        game_number: The game ID to fetch
+        league: League identifier (e.g., 'kijhl', 'whl')
+    """
+    # Get league config
+    config = LEAGUES.get(league)
+    if not config:
+        logger.error(f"Unknown league: {league}")
+        return game_number, None, f"Unknown league: {league}"
+    
     url = (f"https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gameSummary"
-           f"&game_id={game_number}&key=2589e0f644b1bb71&site_id=2&client_code=kijhl&lang=en"
+           f"&game_id={game_number}&key={config['api_key']}&site_id=2&client_code={config['client_code']}&lang=en"
            f"&league_id=")
 
     try:

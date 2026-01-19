@@ -4,7 +4,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KIJHL Game Scraper</title>
+    <title>Game Scraper</title>
+    <script>
+        // Extract league from URL and set dynamic CSS variables BEFORE page renders
+        const urlParams = new URLSearchParams(window.location.search);
+        var currentLeague = urlParams.get('league') || 'kijhl';
+        
+        // Define color schemes for each league
+        const leagueColors = {
+            'kijhl': {
+                primary: '#cc0000',    // Red
+                secondary: '#1a1a1a',  // Black
+                accent: '#ffffff',     // White
+                name: 'KIJHL'
+            },
+            'whl': {
+                primary: '#e06900',    // Orange
+                secondary: '#1a1a1a',  // Black
+                accent: '#ffffff',     // White
+                name: 'WHL'
+            }
+        };
+        
+        // Get colors for current league or default to KIJHL
+        const colors = leagueColors[currentLeague] || leagueColors['kijhl'];
+        
+        // Inject CSS variables dynamically
+        document.documentElement.style.setProperty('--ref-red', colors.primary);
+        document.documentElement.style.setProperty('--ref-black', colors.secondary);
+        document.documentElement.style.setProperty('--ref-white', colors.accent);
+    </script>
     <style>
         :root {
             --ref-black: #1a1a1a;
@@ -79,6 +108,20 @@
             font-size: 1.2em;
             color: #555;
             font-weight: 500;
+        }
+
+        .nav-link {
+            display: inline-block;
+            margin: 0 10px;
+            margin-top: 15px;
+            color: var(--ref-red);
+            font-weight: bold;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            text-decoration: underline;
         }
 
         .leaderboard-button {
@@ -464,9 +507,12 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏒 KIJHL Game & Referee Tracker</h1>
+            <h1 id="leagueTitle">🏒 Game & Referee Tracker</h1>
             <p>Official Game Results & Penalty Tracker</p>
-            <a href="/leaderboard" class="leaderboard-button">View Gameboard</a>
+            <div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px;">
+                <a href="/" class="nav-link">← Back to League Selector</a>
+                <a href="#" id="leaderboardLink" class="nav-link">View Leaderboard →</a>
+            </div>
         </div>
 
         <div class="card">
@@ -492,6 +538,16 @@
     </div>
 
     <script>
+        // currentLeague is already defined globally in the <head> section
+        const season = urlParams.get('season') || '65';
+        
+        // Update page title with league name
+        const leagueName = leagueColors[currentLeague]?.name || currentLeague.toUpperCase();
+        document.getElementById('leagueTitle').textContent = `🏒 ${leagueName} Game & Referee Tracker`;
+        
+        // Update leaderboard link with league parameter
+        document.getElementById('leaderboardLink').href = `/leaderboard?league=${currentLeague}&season=${season}`;
+        
         const form = document.getElementById('scrapeForm');
         const dateInput = document.getElementById('dateInput');
         const submitBtn = document.getElementById('submitBtn');
@@ -506,29 +562,27 @@
 
             const date = dateInput.value;
             if (!date) {
-                alert('Please select a date');
+                alert('Please select a date!');
                 return;
             }
 
-            // Show loading state
+            // Hide previous results and show loading
+            results.style.display = 'none';
+            loading.style.display = 'block';
             submitBtn.disabled = true;
-            submitBtn.innerHTML = "SCRAPING..."; // Feedback on button
-            loading.classList.add('active');
-            results.classList.remove('active');
             statsContainer.innerHTML = '';
             errorsContainer.innerHTML = '';
             gamesContainer.innerHTML = '';
 
             try {
-                const response = await fetch('/api/scrape', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ date: date })
+                console.log(`Fetching games for date: ${date}, league: ${currentLeague}`);
+                const response = await fetch(`/api/scrape?date=${date}&league=${currentLeague}`, {
+                    method: 'GET'
                 });
 
+                console.log('Response status:', response.status);
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 if (!response.ok) {
                     throw new Error(data.error || 'An error occurred');
@@ -536,18 +590,19 @@
 
                 // Display results
                 displayResults(data);
+                results.style.display = 'block';
 
             } catch (error) {
+                console.error('Error fetching games:', error);
                 errorsContainer.innerHTML = `
                     <div class="error">
                         <strong>GAME MISCONDUCT:</strong> ${error.message}
                     </div>
                 `;
-                results.classList.add('active');
+                results.style.display = 'block';
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = "LOAD GAMES"; // Reset button text
-                loading.classList.remove('active');
+                loading.style.display = 'none';
             }
         });
 

@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from database import DatabaseManager
+from league_config import LEAGUES
 import time
 from datetime import datetime, date
 import pytz
@@ -38,10 +39,25 @@ def get_season_id_by_date(date_str):
             return season_id
     return 0
 
-def scrape_games(date):
+def scrape_games(date, league='kijhl'):
+    """Retrieve game data for a given date using the API.
+    
+    Args:
+        date: Date string in YYYY-MM-DD format
+        league: League identifier (e.g., 'kijhl', 'whl')
     """
-    Retrieve game data for a given date using the API.
-    """
+    # Validate league
+    if league not in LEAGUES:
+        return {
+            'games': [],
+            'errors': [f"Unknown league: {league}"],
+            'total_games': 0,
+            'elapsed_time': 0,
+            'success': False,
+            'jungle_score': 0,
+            'dirty_team': ""
+        }
+    
     results = {
         'games': [],
         'errors': [],
@@ -62,7 +78,7 @@ def scrape_games(date):
             results['elapsed_time'] = time.time() - start_time
             return results
 
-        game_numbers = get_game_ids_by_date(date, season_id=season_id)
+        game_numbers = get_game_ids_by_date(date, league=league, season_id=season_id)
         results['total_games'] = len(game_numbers)
         
         if not game_numbers:
@@ -71,7 +87,7 @@ def scrape_games(date):
             return results
 
         # 2. Fetch Logos (Once per request, or could be cached globally)
-        logo_map = fetch_team_logos()
+        logo_map = fetch_team_logos(league, season_id)
         
         # 3. Fetch Game Details (Concurrently)
         max_workers = min(20, len(game_numbers))
@@ -79,7 +95,7 @@ def scrape_games(date):
         dirtiest_team_pims = 0
         
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            future_to_game = {executor.submit(fetch_game_api, game_num): game_num 
+            future_to_game = {executor.submit(fetch_game_api, game_num, league): game_num 
                               for game_num in game_numbers}
             
             for future in as_completed(future_to_game):
@@ -138,52 +154,86 @@ def scrape_games(date):
 
 @app.route('/')
 def index():
-    """Render the main page"""
-    return render_template('index.html')
+    """Render the league selector page"""
+    return render_template('league_selector.html')
+
+@app.route('/scraper')
+def scraper():
+    """Render the game scraper page (original index.html)"""
+    league = request.args.get('league', 'kijhl')
+    season = request.args.get('season', '65')
+    
+    # Validate league
+    if league not in LEAGUES:
+        return jsonify({'error': f'Invalid league: {league}'}), 400
+    
+    league_config = LEAGUES[league]
+    return render_template('index.html', league=league, season=season, league_config=league_config)
 
 @app.route('/leaderboard')
 def leaderboard():
-    """
-    Renders the leaderboard page. No filtering/sorting done server-side.
+    """Renders the leaderboard page. No filtering/sorting done server-side.
     All officials data is fetched client-side via /api/officials endpoint.
     
-    FUTURE: To support multiple leagues, add a league parameter and pass to template:
-            league = request.args.get('league', 'kijhl')
+    Query parameters:
+        league: League identifier (e.g., 'kijhl', 'whl'). Defaults to 'kijhl'
+        season: Season ID. Defaults to '65'
     """
-    # Only pass the selected season to template for initial page load
+    league = request.args.get('league', 'kijhl')
     season = request.args.get('season', '65')
     
+    # Validate league exists
+    if league not in LEAGUES:
+        return f"Invalid league: {league}", 400
+    
     return render_template('leaderboard.html',
+                           current_league=league,
                            current_season=season)
 
 @app.route('/api/officials')
 def get_officials():
-    """
-    API endpoint that returns all officials for a given season as JSON.
+    """API endpoint that returns all officials for a given season and league as JSON.
     Filtering and sorting is done client-side to minimize database reads.
     
-    FUTURE: To support multiple leagues, add league parameter:
-            league = request.args.get('league', 'kijhl')
-            officials = db_manager.get_all_officials_for_season(season_id=int(season), league_id=league)
+    Query parameters:
+        league: League identifier (e.g., 'kijhl', 'whl'). Defaults to 'kijhl'
+        season: Season ID. Defaults to '65'
     """
+    league = request.args.get('league', 'kijhl')
     season = request.args.get('season', '65')
     
+    # Validate league exists
+    if league not in LEAGUES:
+        return jsonify({'error': 'Invalid league', 'officials': []}), 400
+    
     # Fetch all officials for this season (no filtering/sorting)
-    officials = db_manager.get_all_officials_for_season(season_id=int(season))
+    officials = db_manager.get_all_officials_for_season(league=league, season_id=int(season))
     
     return jsonify({
         'officials': officials,
         'season': season,
+        'league': league,
         'count': len(officials)
     })
 
 @app.route('/api/official/<name>')
 def get_official_stats(name):
-    """API endpoint to get career stats for a specific official"""
-    stats = db_manager.get_official_career_stats(name)
+    """API endpoint to get career stats for a specific official across all seasons in a league.
     
-    # Map season IDs to readable names
+    Query parameters:
+        league: League identifier (e.g., 'kijhl', 'whl'). Defaults to 'kijhl'
+    """
+    league = request.args.get('league', 'kijhl')
+    
+    # Validate league exists
+    if league not in LEAGUES:
+        return jsonify({'error': 'Invalid league'}), 400
+    
+    stats = db_manager.get_official_career_stats(league, name)
+    
+    # Map season IDs to readable names (shared across leagues, specific mappings per league would go here)
     season_names = {
+        # KIJHL seasons
         66: '2025-26 Playoffs',
         65: '2025-26 Regular Season',
         63: '2024-25 Playoffs',
@@ -193,24 +243,56 @@ def get_official_stats(name):
         54: '2022-23 Playoffs',
         52: '2022-23 Regular Season',
         51: '2021-22 Playoffs',
-        49: '2021-22 Regular Season'
+        49: '2021-22 Regular Season',
+        # WHL seasons
+        292: '2025-26 Playoffs',
+        289: '2025-26 Regular Season',
+        288: '2024-25 Playoffs',
+        285: '2024-25 Regular Season',
+        284: '2023-24 Playoffs',
+        281: '2023-24 Regular Season',
+        268: '2022-23 Playoffs',
+        265: '2022-23 Regular Season',
+        264: '2021-22 Playoffs',
+        261: '2021-22 Regular Season',
+        260: '2020-21 Playoffs',
+        257: '2020-21 Regular Season',
     }
     
     # Add readable season names to each season record
-    for season in stats['seasons']:
+    for season in stats.get('seasons', []):
         season_id = season.get('season_id', 0)
         season['season_name'] = season_names.get(season_id, f'Season {season_id}')
     
     return jsonify(stats)
 
-@app.route('/api/scrape', methods=['POST'])
+@app.route('/api/scrape', methods=['GET', 'POST'])
 def api_scrape():
-    """API endpoint to scrape games for a given date"""
-    data = request.get_json()
-    date = data.get('date', '').strip()
+    """API endpoint to scrape games for a given date and league.
+    
+    Query parameters (GET):
+        date: Date string in YYYY-MM-DD format (required)
+        league: League identifier (e.g., 'kijhl', 'whl'). Defaults to 'kijhl'
+    
+    Request body (POST with JSON):
+        date: Date string in YYYY-MM-DD format (required)
+        league: League identifier (e.g., 'kijhl', 'whl'). Defaults to 'kijhl'
+    """
+    # Handle both GET query parameters and POST JSON body
+    if request.method == 'GET':
+        date = request.args.get('date', '').strip()
+        league = request.args.get('league', 'kijhl')
+    else:
+        data = request.get_json()
+        date = data.get('date', '').strip()
+        league = data.get('league', 'kijhl')
     
     if not date:
         return jsonify({'error': 'Date is required'}), 400
+    
+    # Validate league exists
+    if league not in LEAGUES:
+        return jsonify({'error': f'Unknown league: {league}'}), 400
     
     # Validate date format (YYYY-MM-DD)
     try:
@@ -218,33 +300,42 @@ def api_scrape():
     except ValueError:
         return jsonify({'error': 'Invalid date format. Please use YYYY-MM-DD'}), 400
     
-    results = scrape_games(date)
+    results = scrape_games(date, league=league)
     return jsonify(results)
 
 @app.route('/tasks/update-daily', methods=['GET', 'POST'])
 def daily_update():
+    """Route specifically for Cloud Scheduler.
+    Scrapes games for today's date for KIJHL (main league).
+    
+    Query parameter:
+        league: League identifier (e.g., 'kijhl', 'whl'). Defaults to 'kijhl'
     """
-    Route specifically for Cloud Scheduler.
-    Scrapes games for todays date.
-    """
+    league = request.args.get('league', 'kijhl')
+    
+    # Validate league exists
+    if league not in LEAGUES:
+        return jsonify({'error': f'Unknown league: {league}'}), 400
+    
     today = datetime.now(pytz.timezone('America/Vancouver')).date()
     date_str = today.strftime('%Y-%m-%d')
     
-    print(f"Running automated update for: {date_str}")
+    print(f"Running automated update for {league}: {date_str}")
     
-    results = scrape_games(date_str)
+    results = scrape_games(date_str, league=league)
 
     if results['success'] and results['games']:
         print(f"   > Found {len(results['games'])} games. Saving...")
         season_id_actual = get_season_id_by_date(date_str)
         for game in results['games']:
-            db_manager.save_game_results(game, season_id=season_id_actual)
+            db_manager.save_game_results(league, game, season_id=season_id_actual)
     else:
         print("   > No games or error.")
     
     return jsonify({
         "status": "success", 
         "date": date_str,
+        "league": league,
         "games_found": results['total_games']
     })
 

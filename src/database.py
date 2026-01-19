@@ -1,6 +1,7 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
 import logging
+from league_config import LEAGUES
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -12,20 +13,45 @@ class DatabaseManager:
             firebase_admin.initialize_app(cred)
         self.db = firestore.client()
 
-    def game_exists(self, game_id):
-        doc = self.db.collection('games').document(str(game_id)).get()
+    def game_exists(self, league, game_id):
+        """Check if a game already exists in the database for a specific league.
+        
+        Args:
+            league: League identifier (e.g., 'kijhl', 'whl')
+            game_id: The game ID to check
+        """
+        config = LEAGUES.get(league)
+        if not config:
+            logger.error(f"Unknown league: {league}")
+            return False
+        
+        firebase_path = config['firebase_path']
+        doc = self.db.collection(firebase_path).collection('games').document(str(game_id)).get()
         return doc.exists
 
-    def save_game_results(self, game_data, season_id=65):
+    def save_game_results(self, league, game_data, season_id=65):
+        """Save game results and update official statistics.
+        
+        Args:
+            league: League identifier (e.g., 'kijhl', 'whl')
+            game_data: Dictionary containing game information
+            season_id: The season ID for this game
+        """
+        config = LEAGUES.get(league)
+        if not config:
+            logger.error(f"Unknown league: {league}")
+            return False
+        
+        firebase_path = config['firebase_path']
         game_id = str(game_data['game_number'])
         
-        if self.game_exists(game_id):
+        if self.game_exists(league, game_id):
             logger.info(f"Game {game_id} already exists. Skipping.")
             return False
 
-        # Save Game
+        # Save Game to league-specific collection
         game_data['season_id'] = season_id # Add season ID to game data
-        self.db.collection('games').document(game_id).set(game_data)
+        self.db.collection(firebase_path).collection('games').document(game_id).set(game_data)
 
         # Process Officials
         officials = []
@@ -39,10 +65,10 @@ class DatabaseManager:
         batch = self.db.batch()
         
         for official in officials:
-            # KEY CHANGE: Composite ID (Name + Season) to separate stats per season
+            # Composite ID (Name + Season) to separate stats per season per league
             # ID example: "Steve_Smith_65"
             doc_id = f"{official['name'].replace(' ', '_')}_{season_id}"
-            ref_ref = self.db.collection('officials').document(doc_id)
+            ref_ref = self.db.collection(firebase_path).collection('officials').document(doc_id)
             
             doc = ref_ref.get()
             
@@ -66,15 +92,23 @@ class DatabaseManager:
         batch.commit()
         return True
 
-    def get_all_officials_for_season(self, season_id=65):
-        """
-        Fetches ALL officials for a given season without any filtering or sorting.
+    def get_all_officials_for_season(self, league, season_id=65):
+        """Fetches ALL officials for a given season and league without filtering or sorting.
         Filtering and sorting will be done client-side to reduce database reads.
         
-        FUTURE: To support multiple leagues, add a league_id parameter and query:
-                .where('season_id', '==', season_id).where('league_id', '==', league_id)
+        Args:
+            league: League identifier (e.g., 'kijhl', 'whl')
+            season_id: The season ID to query
+            
+        FUTURE: Can be extended to support multiple leagues in a single query if needed.
         """
-        query = self.db.collection('officials').where('season_id', '==', season_id)
+        config = LEAGUES.get(league)
+        if not config:
+            logger.error(f"Unknown league: {league}")
+            return []
+        
+        firebase_path = config['firebase_path']
+        query = self.db.collection(firebase_path).collection('officials').where('season_id', '==', season_id)
         docs = query.stream()
         
         # Return all officials as-is
@@ -82,12 +116,26 @@ class DatabaseManager:
         return results
     
     # DEPRECATED: Kept for backwards compatibility if needed
-    def get_leaderboard(self, role='all', sort_by='total_pims', order='desc', season_id=65, games_called_threshold=5):
+    def get_leaderboard(self, league, role='all', sort_by='total_pims', order='desc', season_id=65, games_called_threshold=5):
         """
         DEPRECATED: Use get_all_officials_for_season() and filter/sort client-side instead.
         This method still works but performs filtering on the server, causing more database reads.
+        
+        Args:
+            league: League identifier (e.g., 'kijhl', 'whl')
+            role: Filter by official role ('all', 'referee', 'linesman')
+            sort_by: Field to sort by ('total_pims', 'games_called', 'avg_pims')
+            order: Sort order ('desc' or 'asc')
+            season_id: The season ID to query
+            games_called_threshold: Minimum games to include
         """
-        query = self.db.collection('officials').where('season_id', '==', season_id)
+        config = LEAGUES.get(league)
+        if not config:
+            logger.error(f"Unknown league: {league}")
+            return []
+        
+        firebase_path = config['firebase_path']
+        query = self.db.collection(firebase_path).collection('officials').where('season_id', '==', season_id)
 
         # Apply Role Filter
         if role != 'all':
@@ -107,12 +155,21 @@ class DatabaseManager:
             
         return results
 
-    def get_official_career_stats(self, official_name):
-        """
-        Fetches all season records for a specific official to build career stats.
+    def get_official_career_stats(self, league, official_name):
+        """Fetches all season records for a specific official to build career stats.
         Returns a list of season stats and calculated career totals.
+        
+        Args:
+            league: League identifier (e.g., 'kijhl', 'whl')
+            official_name: The official's name to look up
         """
-        query = self.db.collection('officials').where('name', '==', official_name)
+        config = LEAGUES.get(league)
+        if not config:
+            logger.error(f"Unknown league: {league}")
+            return {}
+        
+        firebase_path = config['firebase_path']
+        query = self.db.collection(firebase_path).collection('officials').where('name', '==', official_name)
         docs = query.stream()
         
         seasons = []
