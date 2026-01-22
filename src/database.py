@@ -26,7 +26,7 @@ class DatabaseManager:
             return False
         
         firebase_path = config['firebase_path']
-        doc = self.db.collection(firebase_path).collection('games').document(str(game_id)).get()
+        doc = self.db.collection(f"{firebase_path}/games").document(str(game_id)).get()
         return doc.exists
 
     def save_game_results(self, league, game_data, season_id=65):
@@ -51,7 +51,7 @@ class DatabaseManager:
 
         # Save Game to league-specific collection
         game_data['season_id'] = season_id # Add season ID to game data
-        self.db.collection(firebase_path).collection('games').document(game_id).set(game_data)
+        self.db.collection(f"{firebase_path}/games").document(game_id).set(game_data)
 
         # Process Officials
         officials = []
@@ -68,7 +68,7 @@ class DatabaseManager:
             # Composite ID (Name + Season) to separate stats per season per league
             # ID example: "Steve_Smith_65"
             doc_id = f"{official['name'].replace(' ', '_')}_{season_id}"
-            ref_ref = self.db.collection(firebase_path).collection('officials').document(doc_id)
+            ref_ref = self.db.collection(f"{firebase_path}/officials").document(doc_id)
             
             doc = ref_ref.get()
             
@@ -108,7 +108,7 @@ class DatabaseManager:
             return []
         
         firebase_path = config['firebase_path']
-        query = self.db.collection(firebase_path).collection('officials').where('season_id', '==', season_id)
+        query = self.db.collection(f"{firebase_path}/officials").where('season_id', '==', season_id)
         docs = query.stream()
         
         # Return all officials as-is
@@ -135,7 +135,7 @@ class DatabaseManager:
             return []
         
         firebase_path = config['firebase_path']
-        query = self.db.collection(firebase_path).collection('officials').where('season_id', '==', season_id)
+        query = self.db.collection(f"{firebase_path}/officials").where('season_id', '==', season_id)
 
         # Apply Role Filter
         if role != 'all':
@@ -169,7 +169,7 @@ class DatabaseManager:
             return {}
         
         firebase_path = config['firebase_path']
-        query = self.db.collection(firebase_path).collection('officials').where('name', '==', official_name)
+        query = self.db.collection(f"{firebase_path}/officials").where('name', '==', official_name)
         docs = query.stream()
         
         seasons = []
