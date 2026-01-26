@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZebraZone - Game Scraper</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='ZebraZone-logo-badge.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='zebrazone-logo-badge.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <script>
         // Extract league from URL and set dynamic CSS variables BEFORE page renders
@@ -42,8 +42,8 @@
     <div class="container">
         <div class="header">
             <div class="header-logo-container">
-                <img src="{{ url_for('static', filename='ZebraZone-logo-badge.png') }}" alt="ZebraZone Logo" class="header-badge-logo">
-                <img src="{{ url_for('static', filename=league|capitalize + '-logo.png') }}" alt="League Logo" class="header-league-logo">
+                <img src="{{ url_for('static', filename='zebrazone-logo-badge.png') }}" alt="ZebraZone Logo" class="header-badge-logo">
+                <img src="{{ url_for('static', filename=league + '-logo.png') }}" alt="League Logo" class="header-league-logo">
             </div>
             <h1>Game Finder</h1>
             <p>Look up all games in the <span id="leagueAbbr"></span> for your given specific date</p>

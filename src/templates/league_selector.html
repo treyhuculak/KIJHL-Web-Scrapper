@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZebraZone - Select League</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='ZebraZone-logo-badge.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='zebrazone-logo-badge.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <style>
         /* Page-specific overrides if needed */
@@ -15,14 +15,14 @@
 <body>
     <div class="league-selector-container">
         <div class="league-selector-header">
-            <img src="{{ url_for('static', filename='ZebraZone-logo-landscape.png') }}" alt="ZebraZone" class="landscape-logo">
+            <img src="{{ url_for('static', filename='zebrazone-logo-landscape.png') }}" alt="ZebraZone" class="landscape-logo">
             <p>Select a league to get instant game data and officials stats</p>
         </div>
 
         <div class="leagues-grid">
             <!-- KIJHL Card -->
             <a href="/scraper?league=kijhl&season=65" class="league-card kijhl">
-                <img src="{{ url_for('static', filename='KIJHL-logo.png') }}" alt="KIJHL Logo" class="league-logo-large">
+                <img src="{{ url_for('static', filename='kijhl-logo.png') }}" alt="KIJHL Logo" class="league-logo-large">
                 <div class="league-name">Kootenay International Junior Hockey League</div>
                 <div class="league-button">Find Games</div>
             </a>
@@ -30,7 +30,7 @@
             <!-- WHL Card -->
             <a href="/scraper?league=whl&season=289" class="league-card whl">
                 <!-- <span class="badge">New</span> -->
-                <img src="{{ url_for('static', filename='WHL-logo.png') }}" alt="WHL Logo" class="league-logo-large">
+                <img src="{{ url_for('static', filename='whl-logo.png') }}" alt="WHL Logo" class="league-logo-large">
                 <div class="league-name">Western Hockey League</div>
                 <p style="color: red;"><strong>*Coming Soon*</strong></p>
                 <div class="league-button">Find Games</div>
