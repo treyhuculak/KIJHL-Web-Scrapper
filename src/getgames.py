@@ -170,16 +170,18 @@ def parse_kijhl_game(data: dict) -> dict:
 
     # Extract Stats
     visiting = data.get('visitingTeam', {})
+    visiting_info = visiting.get('info', {})
     home = data.get('homeTeam', {})
+    home_info = home.get('info', {})
 
     stats = {
         'teams': {
-            'visitor': visiting.get('info', {}).get('name', 'Unknown'),
-            'home': home.get('info', {}).get('name', 'Unknown')
-        },
-        'teams_abbrv': {
-            'visitor': visiting.get('info', {}).get('abbreviation', 'Unknown'),
-            'home': home.get('info', {}).get('abbreviation', 'Unknown')
+            'visitor_city': visiting_info.get('city', 'Unknown'),
+            'home_city': home_info.get('city', 'Unknown'),
+            'visitor_nickname': visiting_info.get('nickname', 'Unknown'),
+            'home_nickname': home_info.get('nickname', 'Unknown'),
+            'visitor_abbrv': visiting_info.get('abbreviation', 'Unknown'),
+            'home_abbrv': home_info.get('abbreviation', 'Unknown')
         },
         'goals': {
             'visitor': visiting.get('stats', {}).get('goals', 0),
@@ -229,12 +231,12 @@ def parse_whl_game(data: dict) -> dict:
     
     stats = {
         'teams': {
-            'visitor': visitor_team.get('name', 'Unknown'),
-            'home': home_team.get('name', 'Unknown')
-        },
-        'teams_abbrv': {
-            'visitor': visitor_team.get('team_code', 'Unknown'),
-            'home': home_team.get('team_code', 'Unknown')
+            'visitor_city': visitor_team.get('city', 'Unknown'),
+            'home_city': home_team.get('city', 'Unknown'),
+            'visitor_nickname': visitor_team.get('nickname', 'Unknown'),
+            'home_nickname': home_team.get('nickname', 'Unknown'),
+            'visitor_abbrv': visitor_team.get('team_code', 'Unknown'),
+            'home_abbrv': home_team.get('team_code', 'Unknown')
         },
         'goals': {
             'visitor': goals.get('visitor', 'Unknown'),

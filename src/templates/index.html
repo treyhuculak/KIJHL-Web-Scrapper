@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZebraZone - Game Scraper</title>
+    <title>ZebraZone - Game Centre</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='zebrazone-logo-badge.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <script>
         // Extract league from URL and set dynamic CSS variables BEFORE page renders
         const urlParams = new URLSearchParams(window.location.search);
         var currentLeague = urlParams.get('league') || 'kijhl';
-        
+
         // Define color schemes for each league
         const leagueColors = {
             'kijhl': {
@@ -27,10 +27,10 @@
                 name: 'WHL'
             }
         };
-        
+
         // Get colors for current league or default to KIJHL
         const colors = leagueColors[currentLeague] || leagueColors['kijhl'];
-        
+
         // Inject CSS variables dynamically
         document.documentElement.style.setProperty('--ref-red', colors.primary);
         document.documentElement.style.setProperty('--ref-black', colors.secondary);
@@ -39,17 +39,20 @@
 </head>
 
 <body>
+    <div id="navOverlay" class="nav-overlay" onclick="toggleNav()"></div>
     <div class="container">
         <div class="header">
             <div class="header-logo-container">
-                <img src="{{ url_for('static', filename='zebrazone-logo-badge.png') }}" alt="ZebraZone Logo" class="header-badge-logo">
-                <img src="{{ url_for('static', filename=league + '-logo.png') }}" alt="League Logo" class="header-league-logo">
+                <img src="{{ url_for('static', filename='zebrazone-logo-badge.png') }}" alt="ZebraZone Logo"
+                    class="header-badge-logo">
+                <img src="{{ url_for('static', filename=league + '-logo.png') }}" alt="League Logo"
+                    class="header-league-logo">
             </div>
-            <h1>Game Finder</h1>
+            <h1>Game Centre</h1>
             <p>Look up all games in the <span id="leagueAbbr"></span> for your given specific date</p>
             <div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px;">
                 <a href="/" class="nav-link">← Back to League Selector</a>
-                <a href="#" id="leaderboardLink" class="nav-link">View Leaderboard →</a>
+                <a href="#" id="leaderboardLink" class="nav-link">View Statistics →</a>
             </div>
         </div>
 
@@ -78,16 +81,16 @@
     <script>
         // currentLeague is already defined globally in the <head> section
         const season = urlParams.get('season') || '65';
-        
+
         // Update page title with league name
         const leagueName = leagueColors[currentLeague]?.name || currentLeague.toUpperCase();
 
         // Insert correct league name into description
         document.getElementById('leagueAbbr').textContent = leagueName;
-        
+
         // Update leaderboard link with league parameter
         document.getElementById('leaderboardLink').href = `/leaderboard?league=${currentLeague}&season=${season}`;
-        
+
         const form = document.getElementById('scrapeForm');
         const dateInput = document.getElementById('dateInput');
         const submitBtn = document.getElementById('submitBtn');
@@ -174,29 +177,55 @@
                 }).join('');
             }
 
+        
+
             // Display games
             if (data.games && data.games.length > 0) {
+                url = "";
+
+                if (data.games[0].league == 'kijhl') {
+                    url = "https://www.kijhl.ca/stats/game-center/${game.game_number}";
+                } else if (data.games[0].league == 'whl') {
+                    url = "https://chl.ca/whl/gamecentre/${game.game_number}/";
+                }
                 gamesContainer.innerHTML = data.games.map(game => `
                     <div class="game-card">
                         <div class="game-header">
                             <span class="game-number">
-                                <a href="https://www.kijhl.ca/stats/game-center/${game.game_number}" target="_blank" rel="noopener noreferrer">
-                                    Game #${game.game_number}
+                                <a href="${url.replace('${game.game_number}', game.game_number)}" target="_blank" rel="noopener noreferrer">
+                                    &#128279; Boxscore
                                 </a>
                             </span>
                         </div>
-                        <div class="teams">
-                            <div class="team-with-logo">
-                                ${game.away_logo ? `<img class="team-logo" src="${game.away_logo}" alt="${game.away_abbrv} logo">` : ''}
-                                <span>${game.away_team} <br><span style="font-size:0.6em; color:#999; font-weight:400;">@</span><br> ${game.home_team}</span>
+                        <div class="matchup-container">
+                            <div class="team-section away-section">
+                                ${game.visitor_logo ? `<img class="team-logo" src="${game.visitor_logo}" alt="${game.visitor_abbrv} logo">` : ''}
+                                <div class="team-info">
+                                    <div class="team-city">${game.visitor_city}</div>
+                                    <div class="team-name">${game.visitor_nickname}</div>
+                                </div>
+                                <div class="team-score ${game.visitor_goals < game.home_goals ? 'losing-score' : ''}">${game.visitor_goals}</div>
+                            </div>
+                            
+                            <div class="center-section">
+                                <div class="result-placeholder">Final</div>
+                                <div class="location-placeholder">Location</div>
+                            </div>
+                            
+                            <div class="team-section home-section">
                                 ${game.home_logo ? `<img class="team-logo" src="${game.home_logo}" alt="${game.home_abbrv} logo">` : ''}
+
+                                <div class="team-info">
+                                    <div class="team-city">${game.home_city}</div>
+                                    <div class="team-name">${game.home_nickname}</div>
+                                </div>
+                                <div class="team-score ${game.home_goals < game.visitor_goals ? 'losing-score' : ''}">${game.home_goals}</div>
                             </div>
                         </div>
-                        <div class="score">${game.score}</div>
                         <div class="pims-info">
                             <div class="pim-item">
-                                <div class="label">${game.away_abbrv} PIMs</div>
-                                <div class="value">${game.away_pims}</div>
+                                <div class="label">${game.visitor_abbrv} PIMs</div>
+                                <div class="value">${game.visitor_pims}</div>
                             </div>
                             <div class="pim-item">
                                 <div class="label">Combined PIMs</div>

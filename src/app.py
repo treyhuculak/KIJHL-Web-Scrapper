@@ -122,26 +122,30 @@ def scrape_games(date, league='kijhl'):
                         'error': error
                     })
                 elif data:
-                    away_abbrv = data['teams_abbrv']['visitor']
-                    home_abbrv = data['teams_abbrv']['home']
-                    away_pims = int(data['pims']['visitor'])
+                    visitor_abbrv = data['teams']['visitor_abbrv']
+                    home_abbrv = data['teams']['home_abbrv']
+                    visitor_pims = int(data['pims']['visitor'])
                     home_pims = int(data['pims']['home'])
 
                     game_obj = {
                         'game_number': game_num,
-                        'away_team': data['teams']['visitor'],
-                        'home_team': data['teams']['home'],
-                        'away_abbrv': away_abbrv,
+                        'visitor_city': data['teams']['visitor_city'],
+                        'home_city': data['teams']['home_city'],
+                        'visitor_nickname': data['teams']['visitor_nickname'],
+                        'home_nickname': data['teams']['home_nickname'],
+                        'visitor_abbrv': visitor_abbrv,
                         'home_abbrv': home_abbrv,
-                        'score': f'{data["goals"]["visitor"]} - {data["goals"]["home"]}',
-                        'away_pims': away_pims,
+                        'visitor_goals': data['goals']['visitor'],
+                        'home_goals': data['goals']['home'],
+                        'visitor_pims': visitor_pims,
                         'home_pims': home_pims,
-                        'total_pims': away_pims + home_pims,
+                        'total_pims': visitor_pims + home_pims,
                         'referees': data['officials']['referees'],
                         'linesmen': data['officials']['linesmen'],
-                        'away_logo': get_logo_path(league, away_abbrv),
+                        'visitor_logo': get_logo_path(league, visitor_abbrv),
                         'home_logo': get_logo_path(league, home_abbrv),
-                        'date': date # Good to add the date to the saved object
+                        'date': date,
+                        'league': league
                     }
 
                     results['games'].append(game_obj)
@@ -149,9 +153,9 @@ def scrape_games(date, league='kijhl'):
                     results['jungle_score'] += game_obj['total_pims']
 
                     # Calculate dirtiest team
-                    max_pims_in_game = max(away_pims, home_pims)
+                    max_pims_in_game = max(visitor_pims, home_pims)
                     if max_pims_in_game > dirtiest_team_pims:
-                        dirtiest_team_name = away_abbrv if away_pims > home_pims else home_abbrv
+                        dirtiest_team_name = visitor_abbrv if visitor_pims > home_pims else home_abbrv
                         dirtiest_team_pims = max_pims_in_game
         
         # 4. Final Calculations
