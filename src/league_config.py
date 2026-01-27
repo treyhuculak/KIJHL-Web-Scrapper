@@ -4,7 +4,7 @@ LEAGUES = {
         'abbreviation': 'KIJHL',
         'client_code': 'kijhl',
         'api_key': '2589e0f644b1bb71',
-        'base_url': 'https://lscluster.hockeytech.com/feed/',
+        'base_url': 'https://lscluster.hockeytech.com/feed/index.php?feed=statviewfeed&view=gameSummary&game_id={game_id}&key=2589e0f644b1bb71&site_id=2&client_code=kijhl&lang=en&league_id=&callback=angular.callbacks._4',
         'season_ids': { 
             '2021-2022 (Reg Season)': 49,
             '2021-2022 (Playoffs)'  : 51,
@@ -29,7 +29,7 @@ LEAGUES = {
         'abbreviation': 'WHL',
         'client_code': 'whl',
         'api_key': 'f1aa699db3d81487',
-        'base_url': 'https://lscluster.hockeytech.com/feed/',
+        'base_url': 'https://lscluster.hockeytech.com/feed/?feed=gc&key=f1aa699db3d81487&game_id={game_id}&client_code=whl&tab=gamesummary&lang_code=en&fmt=json&callback=jsonp_1769465924711_51167',
         'season_ids': {
             # Pre-season is +1 from regular season
             # Playoffs is +3 from regular season

@@ -188,7 +188,7 @@
                         <div class="teams">
                             <div class="team-with-logo">
                                 ${game.away_logo ? `<img class="team-logo" src="${game.away_logo}" alt="${game.away_abbrv} logo">` : ''}
-                                <span>${game.away_team} <br><span style="font-size:0.6em; color:#999; font-weight:400;">VS</span><br> ${game.home_team}</span>
+                                <span>${game.away_team} <br><span style="font-size:0.6em; color:#999; font-weight:400;">@</span><br> ${game.home_team}</span>
                                 ${game.home_logo ? `<img class="team-logo" src="${game.home_logo}" alt="${game.home_abbrv} logo">` : ''}
                             </div>
                         </div>
@@ -212,13 +212,17 @@
                             ${game.referees && game.referees.length > 0 ? `
                             <div class="official-group">
                                 <div class="official-label">Referees</div>
-                                <div class="official-names">${game.referees.join(' & ')}</div>
+                                <div class="official-names">
+                                      ${game.referees.map(r => r[1] && r[1] !== '0' ? `${r[0]} (${r[1]})` : r[0]).join(', ')}
+                                </div>
                             </div>
                             ` : ''}
                             ${game.linesmen && game.linesmen.length > 0 ? `
                             <div class="official-group">
                                 <div class="official-label">Linesmen</div>
-                                <div class="official-names">${game.linesmen.join(' & ')}</div>
+                                <div class="official-names">
+                                      ${game.linesmen.map(l => l[1] && l[1] !== '0' ? `${l[0]} (${l[1]})` : l[0]).join(', ')}
+                                </div>
                             </div>
                             ` : ''}
                         </div>

@@ -1,0 +1,27 @@
+{
+  "league": "kijhl",
+  "cached_at": "2026-01-26T20:51:23.509125",
+  "logos": {
+    "WRA": "logos\\kijhl\\WRA.png",
+    "BVN": "logos\\kijhl\\BVN.png",
+    "CAS": "logos\\kijhl\\CAS.png",
+    "CHA": "logos\\kijhl\\CHA.png",
+    "COL": "logos\\kijhl\\COL.png",
+    "CRE": "logos\\kijhl\\CRE.png",
+    "FER": "logos\\kijhl\\FER.png",
+    "GOL": "logos\\kijhl\\GOL.png",
+    "GFB": "logos\\kijhl\\GFB.png",
+    "KAM": "logos\\kijhl\\KAM.png",
+    "KEL": "logos\\kijhl\\KEL.png",
+    "KIM": "logos\\kijhl\\KIM.png",
+    "MER": "logos\\kijhl\\MER.png",
+    "NEL": "logos\\kijhl\\NEL.png",
+    "OSO": "logos\\kijhl\\OSO.png",
+    "PRI": "logos\\kijhl\\PRI.png",
+    "QUE": "logos\\kijhl\\QUE.png",
+    "REV": "logos\\kijhl\\REV.png",
+    "SIC": "logos\\kijhl\\SIC.png",
+    "SPO": "logos\\kijhl\\SPO.png",
+    "WLM": "logos\\kijhl\\WLM.png"
+  }
+}

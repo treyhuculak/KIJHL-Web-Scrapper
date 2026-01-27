@@ -6,14 +6,32 @@ import time
 from datetime import datetime, date
 import pytz
 import os
+from pathlib import Path
 
 # gcloud builds submit --tag us-west1-docker.pkg.dev/kijhl-app/kijhl-app-repo/kijhl-img:v4.2
 
 # Import new API-based functions
-from getgames import get_game_ids_by_date, fetch_game_api, fetch_team_logos
+from getgames import get_game_ids_by_date, fetch_game_api
 
 app = Flask(__name__)
 db_manager = DatabaseManager()
+
+def get_logo_path(league: str, team_abbrev: str) -> str:
+    """
+    Get the path to a cached team logo.
+    
+    Args:
+        league: League identifier (e.g., 'kijhl', 'whl')
+        team_abbrev: Team abbreviation (e.g., 'CGY', 'EDM')
+        
+    Returns:
+        Path to the logo file (e.g., 'static/logos/kijhl/CGY.png')
+        Returns an empty string if logo file doesn't exist
+    """
+    logo_path = Path(__file__).parent / "static" / "logos" / league / f"{team_abbrev}.png"
+    if logo_path.exists():
+        return f"static/logos/{league}/{team_abbrev}.png"
+    return ''
 
 def get_season_id_by_date(date_str):
     """
@@ -86,11 +104,8 @@ def scrape_games(date, league='kijhl'):
             results['elapsed_time'] = time.time() - start_time
             return results
 
-        # 2. Fetch Logos (Once per request, or could be cached globally)
-        logo_map = fetch_team_logos(league, season_id)
-        
-        # 3. Fetch Game Details (Concurrently)
-        max_workers = min(20, len(game_numbers))
+        # 2. Fetch Game Details (Concurrently)
+        max_workers = min(15, len(game_numbers))  # Reasonable limit for concurrent requests
         dirtiest_team_name = ""
         dirtiest_team_pims = 0
         
@@ -107,31 +122,31 @@ def scrape_games(date, league='kijhl'):
                         'error': error
                     })
                 elif data:
-                    away_abbrv = data['teams_abbrv'][0]
-                    home_abbrv = data['teams_abbrv'][1]
-                    away_pims = int(data['away_pims'])
-                    home_pims = int(data['home_pims'])
+                    away_abbrv = data['teams_abbrv']['visitor']
+                    home_abbrv = data['teams_abbrv']['home']
+                    away_pims = int(data['pims']['visitor'])
+                    home_pims = int(data['pims']['home'])
 
                     game_obj = {
                         'game_number': game_num,
-                        'away_team': data['teams'][0],
-                        'home_team': data['teams'][1],
+                        'away_team': data['teams']['visitor'],
+                        'home_team': data['teams']['home'],
                         'away_abbrv': away_abbrv,
                         'home_abbrv': home_abbrv,
-                        'score': data['score'],
-                        'away_pims': data['away_pims'],
-                        'home_pims': data['home_pims'],
-                        'total_pims': data['total_pims'],
-                        'referees': data['referees'],
-                        'linesmen': data['linesmen'],
-                        'away_logo': logo_map.get(away_abbrv),
-                        'home_logo': logo_map.get(home_abbrv),
+                        'score': f'{data["goals"]["visitor"]} - {data["goals"]["home"]}',
+                        'away_pims': away_pims,
+                        'home_pims': home_pims,
+                        'total_pims': away_pims + home_pims,
+                        'referees': data['officials']['referees'],
+                        'linesmen': data['officials']['linesmen'],
+                        'away_logo': get_logo_path(league, away_abbrv),
+                        'home_logo': get_logo_path(league, home_abbrv),
                         'date': date # Good to add the date to the saved object
                     }
 
                     results['games'].append(game_obj)
 
-                    results['jungle_score'] += data['total_pims']
+                    results['jungle_score'] += game_obj['total_pims']
 
                     # Calculate dirtiest team
                     max_pims_in_game = max(away_pims, home_pims)

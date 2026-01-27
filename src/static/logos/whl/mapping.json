@@ -1,0 +1,29 @@
+{
+  "league": "whl",
+  "cached_at": "2026-01-26T21:06:08.380898",
+  "logos": {
+    "BDN": "logos\\whl\\BDN.png",
+    "CGY": "logos\\whl\\CGY.png",
+    "EDM": "logos\\whl\\EDM.png",
+    "EVT": "logos\\whl\\EVT.png",
+    "KAM": "logos\\whl\\KAM.png",
+    "KEL": "logos\\whl\\KEL.png",
+    "LET": "logos\\whl\\LET.png",
+    "MH": "logos\\whl\\MH.png",
+    "MJ": "logos\\whl\\MJ.png",
+    "PEN": "logos\\whl\\PEN.png",
+    "POR": "logos\\whl\\POR.png",
+    "PA": "logos\\whl\\PA.png",
+    "PG": "logos\\whl\\PG.png",
+    "RD": "logos\\whl\\RD.png",
+    "REG": "logos\\whl\\REG.png",
+    "SAS": "logos\\whl\\SAS.png",
+    "SEA": "logos\\whl\\SEA.png",
+    "SPO": "logos\\whl\\SPO.png",
+    "SC": "logos\\whl\\SC.png",
+    "TC": "logos\\whl\\TC.png",
+    "VAN": "logos\\whl\\VAN.png",
+    "VIC": "logos\\whl\\VIC.png",
+    "WEN": "logos\\whl\\WEN.png"
+  }
+}
