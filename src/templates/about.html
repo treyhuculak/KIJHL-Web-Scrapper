@@ -1,34 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZebraZone - About</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='zebrazone-logo-badge.png') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <script>
-        // Set fixed color scheme for about page (always red)
-        document.documentElement.style.setProperty('--ref-red', '#cc0000');
-        document.documentElement.style.setProperty('--ref-black', '#1a1a1a');
-        document.documentElement.style.setProperty('--ref-white', '#ffffff');
-    </script>
-</head>
+{% block title %}ZebraZone - About{% endblock %}
 
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="header-logo-container">
-                <img src="{{ url_for('static', filename='zebrazone-logo-landscape.png') }}" alt="ZebraZone Logo" class="landscape-logo">
-            </div>
-            <h1>About ZebraZone</h1>
-            <p>Your source for hockey officials statistics and game data</p>
-            <div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px;">
-                <a href="/" class="nav-link">← Back to League Selector</a>
-            </div>
-        </div>
+{% block head_scripts %}
+<script>
+    // Set fixed color scheme for about page (always red)
+    document.documentElement.style.setProperty('--ref-red', '#cc0000');
+    document.documentElement.style.setProperty('--ref-black', '#1a1a1a');
+    document.documentElement.style.setProperty('--ref-white', '#ffffff');
+</script>
+{% endblock %}
 
-        <div class="card about-content">
+{% block header_content %}
+<div class="header-logo-container">
+    <img src="{{ url_for('static', filename='zebrazone-logo-landscape.png') }}" alt="ZebraZone Logo" class="landscape-logo">
+</div>
+<h1>About ZebraZone</h1>
+<p>Your source for hockey officials statistics and game data</p>
+<div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px;">
+    <a href="/" class="nav-link">← Back to League Selector</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card about-content">
             <h2>About ZebraZone</h2>
             <p>ZebraZone is a specialized statistics and game-management tool designed specifically for hockey officials. Developed to streamline the way referees track their game history, career numbers, and events throughout the league, ZebraZone provides a centralized "hub" for the modern official.</p>
 
@@ -65,28 +60,4 @@
 
             <p style="text-align: center; margin-top: 30px; font-weight: bold; font-style: italic; color: var(--ref-red); font-size: 1.1em;">Built by an official, for officials.</p>
         </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="site-footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>Quick Links</h4>
-                <a href="/">Home</a>
-                <a href="/games">Game Centre</a>
-                <a href="/statistics">Officials Stats</a>
-            </div>
-            <div class="footer-section">
-                <h4>About</h4>
-                <a href="/about">About ZebraZone</a>
-            </div>
-            <div class="footer-section footer-branding">
-                <img src="{{ url_for('static', filename='zebrazone-logo-badge.png') }}" alt="ZebraZone" class="footer-logo">
-                <p>2026 ZebraZone</p>
-                <p class="footer-tagline">Making hockey officiating data accessible</p>
-            </div>
-        </div>
-    </footer>
-</body>
-
-</html>
+{% endblock %}

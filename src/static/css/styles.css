@@ -41,12 +41,53 @@ body {
     background: var(--ref-white);
     border-top: 5px solid var(--ref-black);
     border-bottom: 5px solid var(--ref-red);
-    padding: 40px 20px;
+    padding: 40px 20px 20px;
     margin-bottom: 30px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: relative;
     overflow: hidden;
     border-radius: 8px;
+}
+
+/* League Switcher */
+.league-switcher {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 8px;
+    z-index: 5;
+}
+
+.league-switch-btn {
+    padding: 8px 16px;
+    background: var(--ice-gray);
+    border: 2px solid var(--ref-black);
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.9em;
+    color: var(--ref-black);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.league-switch-btn:hover {
+    background: var(--ref-black);
+    color: var(--ref-white);
+}
+
+.league-switch-btn.active {
+    background: var(--ref-red);
+    color: var(--ref-white);
+    border-color: var(--ref-red);
+    cursor: default;
+}
+
+.league-switch-btn.active:hover {
+    background: var(--ref-red);
+    color: var(--ref-white);
 }
 
 /* Zebra Stripe Pattern at top of header */
@@ -1358,8 +1399,8 @@ th.sortable a:hover {
 }
 
 .footer-logo {
-    width: 60px;
-    height: auto;
+    width: auto;
+    height: 60px;
     margin-bottom: 10px;
 }
 
@@ -1468,6 +1509,16 @@ body:not([data-league]) .site-footer a:hover {
     .card-close {
         top: 12px;
         right: 12px;
+    }
+
+    .league-switcher {
+        position: static;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+
+    .header {
+        padding: 20px;
     }
 
     .footer-content {

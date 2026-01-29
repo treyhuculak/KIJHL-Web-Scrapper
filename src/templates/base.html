@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ZebraZone{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='zebrazone-logo-badge.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    {% block head_scripts %}
+    {% endblock %}
+</head>
+
+<body>
+    {% block body_prefix %}{% endblock %}
+    
+    <div class="container">
+        {% block header %}
+        <div class="header">
+            {% block header_content %}
+            <div class="header-logo-container">
+                <img src="{{ url_for('static', filename='zebrazone-logo-badge.png') }}" alt="ZebraZone Logo"
+                    class="header-badge-logo">
+                {% block league_logo %}{% endblock %}
+            </div>
+            <h1>{% block page_title %}ZebraZone{% endblock %}</h1>
+            <p>{% block page_subtitle %}{% endblock %}</p>
+            {% block header_nav %}
+            <div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px;">
+                <a href="/" class="nav-link">← Back to League Selector</a>
+            </div>
+            {% endblock %}
+            {% endblock %}
+        </div>
+        {% endblock %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    {% block scripts %}
+    {% endblock %}
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="/">Home</a>
+                <a href="/games?league=kijhl" id="footerGamesLink">Game Centre</a>
+                <a href="/statistics" id="footerStatsLink">Officials Stats</a>
+            </div>
+            <div class="footer-section">
+                <h4>About</h4>
+                <a href="/about">About ZebraZone</a>
+            </div>
+            <div class="footer-section footer-branding">
+                <img src="{{ url_for('static', filename='zebrazone-logo-landscape.png') }}" alt="ZebraZone" class="footer-logo">
+                <p>&copy; 2026 ZebraZone</p>
+                <p class="footer-tagline">Making hockey officiating data accessible</p>
+            </div>
+        </div>
+    </footer>
+
+    {% block footer_scripts %}
+    {% endblock %}
+</body>
+
+</html>

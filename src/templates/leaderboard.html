@@ -1,63 +1,60 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZebraZone - Officials Statistics</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='zebrazone-logo-badge.png') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <script>
-        // Extract league from URL and set dynamic CSS variables BEFORE page renders
-        // Declare as global variable for use throughout the page
-        const urlParams = new URLSearchParams(window.location.search);
-        var currentLeague = urlParams.get('league') || 'kijhl';
-        
-        // Define color schemes for each league
-        const leagueColors = {
-            'kijhl': {
-                primary: '#cc0000',    // Red
-                secondary: '#1a1a1a',  // Black
-                accent: '#ffffff',     // White
-                name: 'KIJHL'
-            },
-            'whl': {
-                primary: '#e06900',    // Orange
-                secondary: '#1a1a1a',  // Black
-                accent: '#ffffff',     // White
-                name: 'WHL'
-            }
-        };
-        
-        // Get colors for current league or default to KIJHL
-        const colors = leagueColors[currentLeague] || leagueColors['kijhl'];
-        
-        // Inject CSS variables dynamically
-        document.documentElement.style.setProperty('--ref-red', colors.primary);
-        document.documentElement.style.setProperty('--ref-black', colors.secondary);
-        document.documentElement.style.setProperty('--ref-white', colors.accent);
-    </script>
-</head>
+{% block title %}ZebraZone - Officials Statistics{% endblock %}
 
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="header-logo-container">
-                <img src="{{ url_for('static', filename='zebrazone-logo-badge.png') }}" alt="ZebraZone Logo" class="header-badge-logo">
-                <img src="{{ url_for('static', filename=current_league + '-logo.png') }}" alt="League Logo" class="header-league-logo">
-            </div>
-            <h1>Officials Statistics</h1>
-            <p>Search, filter and view officials in the <span id="leagueAbbr"></span>. Click on the name of the official for season-by-season details</p>
-            <div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px;">
-                <a href="/" class="nav-link">← Back to League Selector</a>
-                <a href="/games" class="nav-link">Game Centre →</a>
-            </div>
-        </div>
+{% block head_scripts %}
+<script>
+    // Extract league from URL and set dynamic CSS variables BEFORE page renders
+    // Declare as global variable for use throughout the page
+    const urlParams = new URLSearchParams(window.location.search);
+    var currentLeague = urlParams.get('league') || 'kijhl';
+    
+    // Define color schemes for each league
+    const leagueColors = {
+        'kijhl': {
+            primary: '#cc0000',    // Red
+            secondary: '#1a1a1a',  // Black
+            accent: '#ffffff',     // White
+            name: 'KIJHL'
+        },
+        'whl': {
+            primary: '#e06900',    // Orange
+            secondary: '#1a1a1a',  // Black
+            accent: '#ffffff',     // White
+            name: 'WHL'
+        }
+    };
+    
+    // Get colors for current league or default to KIJHL
+    const colors = leagueColors[currentLeague] || leagueColors['kijhl'];
+    
+    // Inject CSS variables dynamically
+    document.documentElement.style.setProperty('--ref-red', colors.primary);
+    document.documentElement.style.setProperty('--ref-black', colors.secondary);
+    document.documentElement.style.setProperty('--ref-white', colors.accent);
+</script>
+{% endblock %}
 
-        <button class="filter-toggle" style="display: none;">Show/Hide Filters</button>
+{% block league_logo %}
+<img src="{{ url_for('static', filename=current_league + '-logo.png') }}" alt="League Logo" class="header-league-logo">
+{% endblock %}
 
-        <!-- Search Bar -->
-        <div class="search-container">
+{% block page_title %}Officials Statistics{% endblock %}
+
+{% block page_subtitle %}Search, filter and view officials in the <span id="leagueAbbr"></span>. Click on the name of the official for season-by-season details{% endblock %}
+
+{% block header_nav %}
+<div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px;">
+    <a href="/" class="nav-link">← Back to League Selector</a>
+    <a href="/games" class="nav-link">Game Centre →</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<button class="filter-toggle" style="display: none;">Show/Hide Filters</button>
+
+<!-- Search Bar -->
+<div class="search-container">
             <input type="text" id="officialSearch" class="search-input"
                 placeholder="🔍 Search for an official by name...">
         </div>
@@ -174,8 +171,10 @@
             </div>
         </div>
     </div>
+{% endblock %}
 
-    <script>
+{% block scripts %}
+<script>
         // Insert correct league name into description
         document.getElementById('leagueAbbr').textContent = currentLeague.toUpperCase();
 
@@ -215,6 +214,12 @@
             currentFilters.role = document.getElementById('filterRole').value;
             currentFilters.minGames = parseInt(document.getElementById('filterMinGames').value) || 0;
             currentFilters.season = document.getElementById('filterSeason').value;
+
+            // Update URL with current league and season
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('league', currentLeague);
+            newUrl.searchParams.set('season', currentFilters.season);
+            window.history.pushState({}, '', newUrl);
 
             // Check if season changed - need to reload data
             const previousSeason = allOfficialsData.length > 0 ? allOfficialsData[0].season_id : null;
@@ -550,30 +555,11 @@
 
             // Update sort indicators to match default sort
             updateSortIndicators();
+
+            // Update footer games link with current league
+            document.getElementById('footerGamesLink').href = `/games?league=${currentLeague}`;
+            document.getElementById('footerStatsLink').href = `/statistics?league=${currentLeague}`;
         });
 
     </script>
-
-    <!-- Footer -->
-    <footer class="site-footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>Quick Links</h4>
-                <a href="/">Home</a>
-                <a href="/games">Game Centre</a>
-                <a href="/statistics">Officials Stats</a>
-            </div>
-            <div class="footer-section">
-                <h4>About</h4>
-                <a href="/about">About ZebraZone</a>
-            </div>
-            <div class="footer-section footer-branding">
-                <img src="{{ url_for('static', filename='zebrazone-logo-badge.png') }}" alt="ZebraZone" class="footer-logo">
-                <p>2026 ZebraZone</p>
-                <p class="footer-tagline">Making hockey officiating data accessible</p>
-            </div>
-        </div>
-    </footer>
-</body>
-
-</html>
+{% endblock %}
