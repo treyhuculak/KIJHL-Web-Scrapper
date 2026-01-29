@@ -169,6 +169,7 @@ def parse_kijhl_game(data: dict) -> dict:
     linesmen = data.get('linesmen', [])
 
     # Extract Stats
+    game_details = data.get('details', {})
     visiting = data.get('visitingTeam', {})
     visiting_info = visiting.get('info', {})
     home = data.get('homeTeam', {})
@@ -198,6 +199,11 @@ def parse_kijhl_game(data: dict) -> dict:
             'linesmen': [
                 [get_official_name(linesmen, 0), '0'], [get_official_name(linesmen, 1), '0']
             ]
+        },
+        'game_details': {
+            'attendance': game_details.get('attendance', 'Unknown'),
+            'status': game_details.get('status', 'TBD'),
+            'venue': game_details.get('venue', 'Unknown')
         }
     }
 
@@ -249,6 +255,11 @@ def parse_whl_game(data: dict) -> dict:
         'officials': {
             'referees': referees,
             'linesmen': linesmen,
+        },
+        'game_details': {
+            'attendance': gamesummary.get('meta', {}).get('attendance', 'Unknown'),
+            'status': gamesummary.get('status_value', 'TBD'),
+            'venue': gamesummary.get('venue', 'Unknown')
         }
     }
 

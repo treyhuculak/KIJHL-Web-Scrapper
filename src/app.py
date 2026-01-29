@@ -129,6 +129,9 @@ def scrape_games(date, league='kijhl'):
 
                     game_obj = {
                         'game_number': game_num,
+                        'venue': data['game_details']['venue'],
+                        'attendance': data['game_details']['attendance'],
+                        'status': data['game_details']['status'],
                         'visitor_city': data['teams']['visitor_city'],
                         'home_city': data['teams']['home_city'],
                         'visitor_nickname': data['teams']['visitor_nickname'],
@@ -176,9 +179,9 @@ def index():
     """Render the league selector page"""
     return render_template('league_selector.html')
 
-@app.route('/scraper')
-def scraper():
-    """Render the game scraper page (original index.html)"""
+@app.route('/games')
+def games():
+    """Render the games page (original index.html)"""
     league = request.args.get('league', 'kijhl')
     season = request.args.get('season', '65')
     
@@ -189,9 +192,14 @@ def scraper():
     league_config = LEAGUES[league]
     return render_template('index.html', league=league, season=season, league_config=league_config)
 
-@app.route('/leaderboard')
-def leaderboard():
-    """Renders the leaderboard page. No filtering/sorting done server-side.
+@app.route('/about')
+def about():
+    """Render the about page"""
+    return render_template('about.html')
+
+@app.route('/statistics')
+def statistics():
+    """Renders the statistics page. No filtering/sorting done server-side.
     All officials data is fetched client-side via /api/officials endpoint.
     
     Query parameters:

@@ -88,8 +88,8 @@
         // Insert correct league name into description
         document.getElementById('leagueAbbr').textContent = leagueName;
 
-        // Update leaderboard link with league parameter
-        document.getElementById('leaderboardLink').href = `/leaderboard?league=${currentLeague}&season=${season}`;
+        // Update statistics link with league parameter
+        document.getElementById('leaderboardLink').href = `/statistics?league=${currentLeague}&season=${season}`;
 
         const form = document.getElementById('scrapeForm');
         const dateInput = document.getElementById('dateInput');
@@ -177,7 +177,7 @@
                 }).join('');
             }
 
-        
+
 
             // Display games
             if (data.games && data.games.length > 0) {
@@ -208,8 +208,9 @@
                             </div>
                             
                             <div class="center-section">
-                                <div class="result-placeholder">Final</div>
-                                <div class="location-placeholder">Location</div>
+                                <div class="result-placeholder">${game.status}</div>
+                                <div class="location-placeholder">${game.venue}</div>
+                                <div class="attendance-placeholder">Attendance: ${game.attendance}</div>
                             </div>
                             
                             <div class="team-section home-section">
@@ -228,7 +229,7 @@
                                 <div class="value">${game.visitor_pims}</div>
                             </div>
                             <div class="pim-item">
-                                <div class="label">Combined PIMs</div>
+                                <div class="label">Combined</div>
                                 <div class="value total-pims">${game.total_pims}</div>
                             </div>
                             <div class="pim-item">
@@ -269,6 +270,27 @@
         const todayLocal = new Date().toLocaleDateString('en-CA');
         dateInput.value = todayLocal;
     </script>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="/">Home</a>
+                <a href="/games">Game Centre</a>
+                <a href="/statistics">Officials Stats</a>
+            </div>
+            <div class="footer-section">
+                <h4>About</h4>
+                <a href="/about">About ZebraZone</a>
+            </div>
+            <div class="footer-section footer-branding">
+                <img src="{{ url_for('static', filename='zebrazone-logo-badge.png') }}" alt="ZebraZone" class="footer-logo">
+                <p>2026 ZebraZone</p>
+                <p class="footer-tagline">Making hockey officiating data accessible</p>
+            </div>
+        </div>
+    </footer>
 </body>
 
 </html>

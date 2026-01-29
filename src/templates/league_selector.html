@@ -21,14 +21,14 @@
 
         <div class="leagues-grid">
             <!-- KIJHL Card -->
-            <a href="/scraper?league=kijhl&season=65" class="league-card kijhl">
+            <a href="/games?league=kijhl&season=65" class="league-card kijhl">
                 <img src="{{ url_for('static', filename='kijhl-logo.png') }}" alt="KIJHL Logo" class="league-logo-large">
                 <div class="league-name">Kootenay International Junior Hockey League</div>
                 <div class="league-button">Find Games</div>
             </a>
 
             <!-- WHL Card -->
-            <a href="/scraper?league=whl&season=289" class="league-card whl disabled">
+            <a href="/games?league=whl&season=289" class="league-card whl disabled">
                 <!-- <span class="badge">New</span> -->
                 <img src="{{ url_for('static', filename='whl-logo.png') }}" alt="WHL Logo" class="league-logo-large">
                 <div class="league-name">Western Hockey League</div>
@@ -37,6 +37,27 @@
             </a>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="/">Home</a>
+                <a href="/games">Game Centre</a>
+                <a href="/statistics">Officials Stats</a>
+            </div>
+            <div class="footer-section">
+                <h4>About</h4>
+                <a href="/about">About ZebraZone</a>
+            </div>
+            <div class="footer-section footer-branding">
+                <img src="{{ url_for('static', filename='zebrazone-logo-badge.png') }}" alt="ZebraZone" class="footer-logo">
+                <p>2026 ZebraZone</p>
+                <p class="footer-tagline">Making hockey officiating data accessible</p>
+            </div>
+        </div>
+    </footer>
 </body>
 
 </html>

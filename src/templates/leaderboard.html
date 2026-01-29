@@ -50,7 +50,7 @@
             <p>Search, filter and view officials in the <span id="leagueAbbr"></span>. Click on the name of the official for season-by-season details</p>
             <div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px;">
                 <a href="/" class="nav-link">← Back to League Selector</a>
-                <a href="/scraper" class="nav-link">Game Centre →</a>
+                <a href="/games" class="nav-link">Game Centre →</a>
             </div>
         </div>
 
@@ -553,6 +553,27 @@
         });
 
     </script>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="/">Home</a>
+                <a href="/games">Game Centre</a>
+                <a href="/statistics">Officials Stats</a>
+            </div>
+            <div class="footer-section">
+                <h4>About</h4>
+                <a href="/about">About ZebraZone</a>
+            </div>
+            <div class="footer-section footer-branding">
+                <img src="{{ url_for('static', filename='zebrazone-logo-badge.png') }}" alt="ZebraZone" class="footer-logo">
+                <p>2026 ZebraZone</p>
+                <p class="footer-tagline">Making hockey officiating data accessible</p>
+            </div>
+        </div>
+    </footer>
 </body>
 
 </html>

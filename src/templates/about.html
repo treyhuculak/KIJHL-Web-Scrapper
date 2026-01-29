@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZebraZone - About</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='zebrazone-logo-badge.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script>
+        // Set fixed color scheme for about page (always red)
+        document.documentElement.style.setProperty('--ref-red', '#cc0000');
+        document.documentElement.style.setProperty('--ref-black', '#1a1a1a');
+        document.documentElement.style.setProperty('--ref-white', '#ffffff');
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-logo-container">
+                <img src="{{ url_for('static', filename='zebrazone-logo-landscape.png') }}" alt="ZebraZone Logo" class="landscape-logo">
+            </div>
+            <h1>About ZebraZone</h1>
+            <p>Your source for hockey officials statistics and game data</p>
+            <div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px;">
+                <a href="/" class="nav-link">← Back to League Selector</a>
+            </div>
+        </div>
+
+        <div class="card about-content">
+            <h2>About ZebraZone</h2>
+            <p>ZebraZone is a specialized statistics and game-management tool designed specifically for hockey officials. Developed to streamline the way referees track their game history, career numbers, and events throughout the league, ZebraZone provides a centralized "hub" for the modern official.</p>
+
+            <p>Currently, the platform integrates data from the WHL and KIJHL, allowing officials to quickly look up the important game details without the hassle of scanning large boxscores. Whether you are reviewing your last game or scanning for exciting games throughout the league, ZebraZone is built to keep you in the zone.</p>
+
+            <h3>Mission</h3>
+            <p>Our mission is to empower the officiating community with data-driven insights, helping referees at all levels have instant access to the metrics that matter, as well as their own officiating history and league-wide statistics.</p>
+
+            <h3>Supported Leagues</h3>
+            <div class="leagues-info">
+                <div class="league-info-item">
+                    <strong>KIJHL</strong> - Kootenay International Junior Hockey League
+                    <span class="status-badge active">Active</span>
+                </div>
+                <div class="league-info-item">
+                    <strong>WHL</strong> - Western Hockey League
+                    <span class="status-badge coming-soon">Coming Soon</span>
+                </div>
+            </div>
+
+            <h3>Legal & Trademarks</h3>
+            
+            <h4>Independent Status</h4>
+            <p>ZebraZone is an independently developed application. It is <strong>not affiliated with, endorsed by, or sponsored</strong>  by the Western Hockey League (WHL), the Kootenay International Junior Hockey League (KIJHL), or any of their respective member teams.</p>
+
+            <h4>Trademarks</h4>
+            <p>All league and team names, logos, and trademarks displayed within this application are the <strong>sole property</strong> of their respective owners. These assets are used within ZebraZone for informational and identification purposes only under the principles of Nominative Fair Use. <strong>ZebraZone makes no claim of ownership over these marks.</strong></p>
+
+            <h4>Data Accuracy</h4>
+            <p>While ZebraZone strives to provide the most accurate and up-to-date information by utilizing various data feeds and APIs, we cannot guarantee the 100% accuracy of third-party data. Users should refer to official league websites for final, sanctioned game records.</p>
+
+            <h3>Support & Development</h3>
+            <p>ZebraZone is a project born out of a passion for the game and the officiating craft. If you have feedback, feature requests, or notice any data discrepancies, please contact the developer.</p>
+
+            <p style="text-align: center; margin-top: 30px; font-weight: bold; font-style: italic; color: var(--ref-red); font-size: 1.1em;">Built by an official, for officials.</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="/">Home</a>
+                <a href="/games">Game Centre</a>
+                <a href="/statistics">Officials Stats</a>
+            </div>
+            <div class="footer-section">
+                <h4>About</h4>
+                <a href="/about">About ZebraZone</a>
+            </div>
+            <div class="footer-section footer-branding">
+                <img src="{{ url_for('static', filename='zebrazone-logo-badge.png') }}" alt="ZebraZone" class="footer-logo">
+                <p>2026 ZebraZone</p>
+                <p class="footer-tagline">Making hockey officiating data accessible</p>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>
