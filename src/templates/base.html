@@ -26,9 +26,30 @@
             <h1>{% block page_title %}ZebraZone{% endblock %}</h1>
             <p>{% block page_subtitle %}{% endblock %}</p>
             {% block header_nav %}
-            <div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px;">
-                <a href="/" class="nav-link">← Back to League Selector</a>
-            </div>
+            <!-- Navigation Bar -->
+            <nav class="main-nav">
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="/" class="nav-link" data-page="home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="games" id="navGamesLink">Game Centre</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="stats" id="navStatsLink">Stats</a>
+                    </li>
+                    <li class="nav-item disabled-nav">
+                        <a href="#" class="nav-link" data-page="rosters">Roster</a>
+                    </li>
+                    <li class="nav-item has-dropdown">
+                        <a href="#" class="nav-link" data-page="league">League <span class="dropdown-arrow">▼</span></a>
+                        <ul class="dropdown-menu" id="leagueSwitcherDropdown">
+                            <li><a href="#" data-league="kijhl">KIJHL</a></li>
+                            <li><a href="#" data-league="whl">WHL</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
             {% endblock %}
             {% endblock %}
         </div>
@@ -61,6 +82,72 @@
             </div>
         </div>
     </footer>
+
+    <!-- Navigation Script -->
+    <script>
+        (function() {
+            // Get current page and league from URL
+            const currentPath = window.location.pathname;
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentLeague = urlParams.get('league') || 'kijhl';
+            
+            // Highlight current page in navigation
+            const navLinks = document.querySelectorAll('.nav-item > .nav-link');
+            navLinks.forEach(link => {
+                const page = link.dataset.page;
+                if (page === 'home' && currentPath === '/') {
+                    link.classList.add('active');
+                } else if (page === 'games' && currentPath === '/games') {
+                    link.classList.add('active');
+                } else if (page === 'stats' && (currentPath === '/statistics' || currentPath === '/leaderboard')) {
+                    link.classList.add('active');
+                } else if (page === 'rosters' && currentPath.includes('/rosters')) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Highlight current league in League switcher dropdown
+            const leagueSwitcherDropdown = document.getElementById('leagueSwitcherDropdown');
+            if (leagueSwitcherDropdown) {
+                const leagueLinks = leagueSwitcherDropdown.querySelectorAll('a[data-league]');
+                leagueLinks.forEach(link => {
+                    if (link.dataset.league === currentLeague) {
+                        link.classList.add('active-league');
+                    }
+                    
+                    // Handle league switch click
+                    link.addEventListener('click', function(e) {
+                        if (this.classList.contains('disabled')) return;
+                        e.preventDefault();
+                        const newLeague = this.dataset.league;
+                        const newParams = new URLSearchParams(window.location.search);
+                        newParams.set('league', newLeague);
+                        window.location.href = currentPath + '?' + newParams.toString();
+                    });
+                });
+            }
+            
+            // Update footer links with current league
+            const footerGamesLink = document.getElementById('footerGamesLink');
+            const footerStatsLink = document.getElementById('footerStatsLink');
+            if (footerGamesLink) {
+                footerGamesLink.href = '/games?league=' + currentLeague;
+            }
+            if (footerStatsLink) {
+                footerStatsLink.href = '/statistics?league=' + currentLeague;
+            }
+            
+            // Update nav links with current league
+            const navGamesLink = document.getElementById('navGamesLink');
+            const navStatsLink = document.getElementById('navStatsLink');
+            if (navGamesLink) {
+                navGamesLink.href = '/games?league=' + currentLeague;
+            }
+            if (navStatsLink) {
+                navStatsLink.href = '/statistics?league=' + currentLeague;
+            }
+        })();
+    </script>
 
     {% block footer_scripts %}
     {% endblock %}

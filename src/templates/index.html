@@ -46,13 +46,6 @@
 
 {% block page_subtitle %}Look up all games in the <span id="leagueAbbr"></span> for your given specific date{% endblock %}
 
-{% block header_nav %}
-<div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px;">
-    <a href="/" class="nav-link">← Back to League Selector</a>
-    <a href="#" id="leaderboardLink" class="nav-link">View Statistics →</a>
-</div>
-{% endblock %}
-
 {% block content %}
 <div class="card">
             <form id="scrapeForm">
@@ -88,9 +81,6 @@
 
         // Insert correct league name into description
         document.getElementById('leagueAbbr').textContent = leagueName;
-
-        // Update statistics link with league parameter
-        document.getElementById('leaderboardLink').href = `/statistics?league=${currentLeague}`;
 
         const form = document.getElementById('scrapeForm');
         const dateInput = document.getElementById('dateInput');

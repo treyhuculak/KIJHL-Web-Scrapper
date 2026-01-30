@@ -40,13 +40,12 @@ body {
     text-align: center;
     background: var(--ref-white);
     border-top: 5px solid var(--ref-black);
-    border-bottom: 5px solid var(--ref-red);
     padding: 40px 20px 20px;
     margin-bottom: 30px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: relative;
-    overflow: hidden;
-    border-radius: 8px;
+    overflow: visible;
+    border-radius: 8px 8px 0 0;
 }
 
 /* League Switcher */
@@ -140,6 +139,184 @@ body {
     color: #888;
     font-weight: 400;
     margin-top: 5px;
+}
+
+/* === MAIN NAVIGATION BAR === */
+.main-nav {
+    background: var(--ref-black);
+    margin: 20px -20px -20px -20px;
+    border-radius: 0;
+    padding: 0;
+    border-bottom: 5px solid var(--ref-red);
+    border-radius: 0 0 8px 8px;
+}
+
+.nav-menu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 0;
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-item > .nav-link {
+    display: block;
+    padding: 15px 25px;
+    color: var(--ref-white);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.nav-item > .nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-bottom-color: var(--ref-red);
+    text-decoration: none;
+}
+
+.nav-item > .nav-link.active {
+    background: var(--ref-red);
+    border-bottom-color: var(--ref-red);
+    color: var(--ref-white);
+}
+
+.dropdown-arrow {
+    font-size: 0.7em;
+    margin-left: 5px;
+    transition: transform 0.2s ease;
+}
+
+.nav-item:hover .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ref-black);
+    min-width: 180px;
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 100;
+}
+
+.nav-item:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+}
+
+.dropdown-menu li a {
+    display: block;
+    padding: 12px 20px;
+    color: var(--ref-white);
+    text-decoration: none;
+    font-size: 0.9em;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu li a:hover {
+    background: var(--ref-red);
+    color: var(--ref-white);
+}
+
+.dropdown-menu li a.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.dropdown-menu li a.active-league {
+    background: var(--ref-red);
+    color: var(--ref-white);
+}
+
+/* Disabled nav item */
+.disabled-nav {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.disabled-nav > .nav-link {
+    pointer-events: none;
+}
+
+.disabled-nav .dropdown-menu {
+    display: none;
+}
+
+/* Mobile Navigation */
+@media (max-width: 768px) {
+    .main-nav {
+        margin: 20px -20px -20px -20px;
+    }
+    
+    .nav-menu {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav-item > .nav-link {
+        padding: 12px 15px;
+        font-size: 0.85em;
+    }
+    
+    .dropdown-menu {
+        position: absolute;
+        min-width: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-menu {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .nav-item {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .nav-item > .nav-link {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .dropdown-menu {
+        position: static;
+        transform: none;
+        width: 100%;
+        border-radius: 0;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 1;
+        visibility: visible;
+        transition: max-height 0.3s ease;
+    }
+    
+    .nav-item:hover .dropdown-menu,
+    .nav-item.active .dropdown-menu {
+        max-height: 200px;
+    }
 }
 
 /* League Selector Page */
