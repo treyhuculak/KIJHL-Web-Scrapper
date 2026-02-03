@@ -53,11 +53,11 @@
         </div>
 
         <div class="filter-bar collapsible-filters"
-            style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; border-left: 5px solid var(--ref-black);">
+            style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; border-left: 5px solid var(--ref-black);">
             <form id="filterForm" onsubmit="return false;"
-                style="display: flex; gap: 10px; width: 100%; align-items: center; flex-wrap: wrap;">
+                style="display: flex; gap: 20px; width: 100%; align-items: flex-end; flex-wrap: nowrap;">
 
-                <div>
+                <div style="flex-shrink: 0;">
                     <label style="font-size: 0.8em; font-weight: bold; display: block;">OFFICIAL TYPE</label>
                     <select name="role" id="filterRole"
                         style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
@@ -68,7 +68,7 @@
                 </div>
 
 
-                <div>
+                <div style="flex-shrink: 0;">
                     <label style="font-size: 0.8em; font-weight: bold; display: block;">SEASON</label>
                     <select name="season" id="filterSeason"
                         style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
@@ -85,13 +85,13 @@
                     </select>
                 </div>
 
-                <div>
+                <div style="flex-shrink: 0;">
                     <label style="font-size: 0.8em; font-weight: bold; display: block;">MIN. GAMES</label>
                     <input type="number" name="games_called" id="filterMinGames" min="0" value="0"
                         style="width: 60px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
                 </div>
 
-                <div style="margin-left: auto;">
+                <div style="margin-left: auto; flex-shrink: 0;">
                     <button type="button" onclick="applyFilters()"
                         style="padding: 10px 20px; background: var(--ref-red); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">APPLY
                         FILTERS</button>

@@ -197,6 +197,19 @@ def about():
     """Render the about page"""
     return render_template('about.html')
 
+@app.route('/rosters')
+def rosters():
+    """Render the rosters page"""
+    league = request.args.get('league', 'kijhl')
+    season = request.args.get('season', '65')
+    
+    # Validate league
+    if league not in LEAGUES:
+        return jsonify({'error': f'Invalid league: {league}'}), 400
+    
+    league_config = LEAGUES[league]
+    return render_template('rosters.html', league=league, season=season, league_config=league_config)
+
 @app.route('/statistics')
 def statistics():
     """Renders the statistics page. No filtering/sorting done server-side.

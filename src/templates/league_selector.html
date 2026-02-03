@@ -8,16 +8,31 @@
     </style>
 {% endblock %}
 
-{% block header %}
-    <!-- No header container for league selector page -->
+{% block header_content %}
+<div class="header-logo-container">
+    <img src="{{ url_for('static', filename='zebrazone-logo-landscape.png') }}" alt="ZebraZone Logo" class="landscape-logo">
+</div>
+<p>Select a league to get instant game data and officials stats</p>
+{% block header_nav %}
+<!-- Navigation Bar -->
+<nav class="main-nav">
+    <ul class="nav-menu">
+        <li class="nav-item">
+            <a href="/" class="nav-link active" data-page="home">Home</a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link" data-page="games" id="navGamesLink">Game Centre</a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link" data-page="stats" id="navStatsLink">Stats</a>
+        </li>
+    </ul>
+</nav>
+{% endblock %}
 {% endblock %}
 
 {% block content %}
     <div class="league-selector-container">
-        <div class="league-selector-header">
-            <img src="{{ url_for('static', filename='zebrazone-logo-landscape.png') }}" alt="ZebraZone" class="landscape-logo">
-            <p>Select a league to get instant game data and officials stats</p>
-        </div>
 
         <div class="leagues-grid">
             <!-- KIJHL Card -->

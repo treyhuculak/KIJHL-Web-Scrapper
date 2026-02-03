@@ -14,47 +14,47 @@
 <body>
     {% block body_prefix %}{% endblock %}
     
-    <div class="container">
-        {% block header %}
-        <div class="header">
-            {% block header_content %}
-            <div class="header-logo-container">
-                <img src="{{ url_for('static', filename='zebrazone-logo-badge.png') }}" alt="ZebraZone Logo"
-                    class="header-badge-logo">
-                {% block league_logo %}{% endblock %}
-            </div>
-            <h1>{% block page_title %}ZebraZone{% endblock %}</h1>
-            <p>{% block page_subtitle %}{% endblock %}</p>
-            {% block header_nav %}
-            <!-- Navigation Bar -->
-            <nav class="main-nav">
-                <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="/" class="nav-link" data-page="home">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link" data-page="games" id="navGamesLink">Game Centre</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link" data-page="stats" id="navStatsLink">Stats</a>
-                    </li>
-                    <li class="nav-item disabled-nav">
-                        <a href="#" class="nav-link" data-page="rosters">Roster</a>
-                    </li>
-                    <li class="nav-item has-dropdown">
-                        <a href="#" class="nav-link" data-page="league">League <span class="dropdown-arrow">▼</span></a>
-                        <ul class="dropdown-menu" id="leagueSwitcherDropdown">
-                            <li><a href="#" data-league="kijhl">KIJHL</a></li>
-                            <li><a href="#" data-league="whl">WHL</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </nav>
-            {% endblock %}
-            {% endblock %}
+    {% block header %}
+    <div class="header">
+        {% block header_content %}
+        <div class="header-logo-container">
+            <img src="{{ url_for('static', filename='zebrazone-logo-badge.png') }}" alt="ZebraZone Logo"
+                class="header-badge-logo">
+            {% block league_logo %}{% endblock %}
         </div>
+        <h1>{% block page_title %}ZebraZone{% endblock %}</h1>
+        <p>{% block page_subtitle %}{% endblock %}</p>
+        {% block header_nav %}
+        <!-- Navigation Bar -->
+        <nav class="main-nav">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/" class="nav-link" data-page="home">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="games" id="navGamesLink">Game Centre</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="stats" id="navStatsLink">Stats</a>
+                </li>
+                <!-- <li class="nav-item">
+                    <a href="#" class="nav-link disabled" data-page="rosters" id="navRostersLink">Roster</a>
+                </li> -->
+                <li class="nav-item has-dropdown">
+                    <a href="#" class="nav-link" data-page="league">League <span class="dropdown-arrow">▼</span></a>
+                    <ul class="dropdown-menu" id="leagueSwitcherDropdown">
+                        <li><a href="#" data-league="kijhl">KIJHL</a></li>
+                        <li><a href="#" data-league="whl" class="">WHL (Coming Soon)</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
         {% endblock %}
+        {% endblock %}
+    </div>
+    {% endblock %}
 
+    <div class="container">
         {% block content %}
         {% endblock %}
     </div>
@@ -90,6 +90,32 @@
             const currentPath = window.location.pathname;
             const urlParams = new URLSearchParams(window.location.search);
             const currentLeague = urlParams.get('league') || 'kijhl';
+            
+            // Sticky navigation on scroll
+            const nav = document.querySelector('.main-nav');
+            const header = document.querySelector('.header');
+            let navOffset = null;
+            
+            function handleScroll() {
+                if (!navOffset) {
+                    navOffset = nav.offsetTop;
+                }
+                
+                if (window.pageYOffset >= navOffset) {
+                    nav.classList.add('sticky-nav');
+                    // Add padding to prevent content jump
+                    if (header) {
+                        header.style.paddingBottom = nav.offsetHeight + 'px';
+                    }
+                } else {
+                    nav.classList.remove('sticky-nav');
+                    if (header) {
+                        header.style.paddingBottom = '20px';
+                    }
+                }
+            }
+            
+            window.addEventListener('scroll', handleScroll);
             
             // Highlight current page in navigation
             const navLinks = document.querySelectorAll('.nav-item > .nav-link');
@@ -140,11 +166,15 @@
             // Update nav links with current league
             const navGamesLink = document.getElementById('navGamesLink');
             const navStatsLink = document.getElementById('navStatsLink');
+            const navRostersLink = document.getElementById('navRostersLink');
             if (navGamesLink) {
                 navGamesLink.href = '/games?league=' + currentLeague;
             }
             if (navStatsLink) {
                 navStatsLink.href = '/statistics?league=' + currentLeague;
+            }
+            if (navRostersLink) {
+                navRostersLink.href = '/rosters?league=' + currentLeague;
             }
         })();
     </script>

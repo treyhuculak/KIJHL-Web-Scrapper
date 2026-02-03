@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}ZebraZone - Rosters{% endblock %}
+
+{% block head_scripts %}
+<script>
+    // Extract league from URL and set dynamic CSS variables BEFORE page renders
+    const urlParams = new URLSearchParams(window.location.search);
+    var currentLeague = urlParams.get('league') || 'kijhl';
+
+    // Define color schemes for each league
+    const leagueColors = {
+        'kijhl': {
+            primary: '#cc0000',    // Red
+            secondary: '#1a1a1a',  // Black
+            accent: '#ffffff',     // White
+            name: 'KIJHL'
+        },
+        'whl': {
+            primary: '#e06900',    // Orange
+            secondary: '#1a1a1a',  // Black
+            accent: '#ffffff',     // White
+            name: 'WHL'
+        }
+    };
+
+    // Get colors for current league or default to KIJHL
+    const colors = leagueColors[currentLeague] || leagueColors['kijhl'];
+
+    // Inject CSS variables dynamically
+    document.documentElement.style.setProperty('--ref-red', colors.primary);
+    document.documentElement.style.setProperty('--ref-black', colors.secondary);
+    document.documentElement.style.setProperty('--ref-white', colors.accent);
+</script>
+{% endblock %}
+
+{% block league_logo %}
+<img src="{{ url_for('static', filename=league + '-logo.png') }}" alt="League Logo" class="header-league-logo">
+{% endblock %}
+
+{% block page_title %}Officials Roster{% endblock %}
+
+{% block page_subtitle %}Complete roster of officials in the <span id="leagueAbbr"></span>{% endblock %}
+
+{% block content %}
+<!-- Search Bar -->
+<div class="search-container">
+    <input type="text" id="officialSearch" class="search-input" placeholder="🔍 Search for an official by name or number...">
+</div>
+
+<!-- Referees Section -->
+<div class="card">
+    <h2 style="border-left: 5px solid var(--ref-red); padding-left: 15px; margin-bottom: 20px;">Referees</h2>
+    <div class="roster-grid">
+        <div class="roster-card">
+            <div class="roster-number">#12</div>
+            <div class="roster-info">
+                <div class="roster-name">Anderson, Michael</div>
+                <div class="roster-position">Referee</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#45</div>
+            <div class="roster-info">
+                <div class="roster-name">Bennett, Sarah</div>
+                <div class="roster-position">Referee</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#8</div>
+            <div class="roster-info">
+                <div class="roster-name">Carter, James</div>
+                <div class="roster-position">Referee</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#23</div>
+            <div class="roster-info">
+                <div class="roster-name">Davidson, Emily</div>
+                <div class="roster-position">Referee</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#67</div>
+            <div class="roster-info">
+                <div class="roster-name">Edwards, Robert</div>
+                <div class="roster-position">Referee</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#34</div>
+            <div class="roster-info">
+                <div class="roster-name">Foster, Jennifer</div>
+                <div class="roster-position">Referee</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#91</div>
+            <div class="roster-info">
+                <div class="roster-name">Garcia, David</div>
+                <div class="roster-position">Referee</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#15</div>
+            <div class="roster-info">
+                <div class="roster-name">Harrison, Thomas</div>
+                <div class="roster-position">Referee</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Linesmen Section -->
+<div class="card">
+    <h2 style="border-left: 5px solid var(--ref-red); padding-left: 15px; margin-bottom: 20px;">Linesmen</h2>
+    <div class="roster-grid">
+        <div class="roster-card">
+            <div class="roster-number">#28</div>
+            <div class="roster-info">
+                <div class="roster-name">Adams, Christopher</div>
+                <div class="roster-position">Linesman</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#55</div>
+            <div class="roster-info">
+                <div class="roster-name">Brooks, Matthew</div>
+                <div class="roster-position">Linesman</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#73</div>
+            <div class="roster-info">
+                <div class="roster-name">Campbell, Daniel</div>
+                <div class="roster-position">Linesman</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#42</div>
+            <div class="roster-info">
+                <div class="roster-name">Dixon, Patrick</div>
+                <div class="roster-position">Linesman</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#19</div>
+            <div class="roster-info">
+                <div class="roster-name">Evans, Kevin</div>
+                <div class="roster-position">Linesman</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#61</div>
+            <div class="roster-info">
+                <div class="roster-name">Fisher, Brandon</div>
+                <div class="roster-position">Linesman</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#88</div>
+            <div class="roster-info">
+                <div class="roster-name">Graham, Timothy</div>
+                <div class="roster-position">Linesman</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#36</div>
+            <div class="roster-info">
+                <div class="roster-name">Henderson, Ryan</div>
+                <div class="roster-position">Linesman</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#7</div>
+            <div class="roster-info">
+                <div class="roster-name">Jackson, Andrew</div>
+                <div class="roster-position">Linesman</div>
+            </div>
+        </div>
+        <div class="roster-card">
+            <div class="roster-number">#52</div>
+            <div class="roster-info">
+                <div class="roster-name">Kelly, Nathan</div>
+                <div class="roster-position">Linesman</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Update league name in subtitle
+    const leagueName = leagueColors[currentLeague]?.name || currentLeague.toUpperCase();
+    document.getElementById('leagueAbbr').textContent = leagueName;
+
+    // Search functionality
+    const searchInput = document.getElementById('officialSearch');
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rosterCards = document.querySelectorAll('.roster-card');
+        
+        rosterCards.forEach(card => {
+            const name = card.querySelector('.roster-name').textContent.toLowerCase();
+            const number = card.querySelector('.roster-number').textContent.toLowerCase();
+            
+            if (name.includes(searchTerm) || number.includes(searchTerm)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}
