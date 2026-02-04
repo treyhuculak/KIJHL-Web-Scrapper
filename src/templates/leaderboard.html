@@ -15,12 +15,14 @@
             primary: '#cc0000',    // Red
             secondary: '#1a1a1a',  // Black
             accent: '#ffffff',     // White
+            boxShadow: '#990000',  // Darker Red for box shadows
             name: 'KIJHL'
         },
         'whl': {
             primary: '#e06900',    // Orange
             secondary: '#1a1a1a',  // Black
             accent: '#ffffff',     // White
+            boxShadow: '#b35000',  // Darker Orange for box shadows
             name: 'WHL'
         }
     };
@@ -32,6 +34,7 @@
     document.documentElement.style.setProperty('--ref-red', colors.primary);
     document.documentElement.style.setProperty('--ref-black', colors.secondary);
     document.documentElement.style.setProperty('--ref-white', colors.accent);
+    document.documentElement.style.setProperty('--ref-red-dark', colors.boxShadow);
 </script>
 {% endblock %}
 
@@ -44,7 +47,7 @@
 {% block page_subtitle %}Search, filter and view officials in the <span id="leagueAbbr"></span>. Click on the name of the official for season-by-season details{% endblock %}
 
 {% block content %}
-<button class="filter-toggle" style="display: none;">Show/Hide Filters</button>
+<button class="filter-toggle">Show/Hide Filters</button>
 
 <!-- Search Bar -->
 <div class="search-container">
@@ -52,26 +55,21 @@
                 placeholder="🔍 Search for an official by name...">
         </div>
 
-        <div class="filter-bar collapsible-filters"
-            style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; border-left: 5px solid var(--ref-black);">
-            <form id="filterForm" onsubmit="return false;"
-                style="display: flex; gap: 20px; width: 100%; align-items: flex-end; flex-wrap: nowrap;">
+        <div class="filter-bar collapsible-filters">
+            <form id="filterForm" onsubmit="return false;">
 
-                <div style="flex-shrink: 0;">
-                    <label style="font-size: 0.8em; font-weight: bold; display: block;">OFFICIAL TYPE</label>
-                    <select name="role" id="filterRole"
-                        style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                <div class="filter-group">
+                    <label class="filter-label">OFFICIAL TYPE</label>
+                    <select name="role" id="filterRole" class="filter-select">
                         <option value="all">All Officials</option>
                         <option value="referee">Referees</option>
                         <option value="linesman">Linesmen</option>
                     </select>
                 </div>
 
-
-                <div style="flex-shrink: 0;">
-                    <label style="font-size: 0.8em; font-weight: bold; display: block;">SEASON</label>
-                    <select name="season" id="filterSeason"
-                        style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                <div class="filter-group">
+                    <label class="filter-label">SEASON</label>
+                    <select name="season" id="filterSeason" class="filter-select">
                         <option value="66">2025-26 Playoffs</option>
                         <option value="65" selected>2025-26 Regular Season</option>
                         <option value="63">2024-25 Playoffs</option>
@@ -85,16 +83,13 @@
                     </select>
                 </div>
 
-                <div style="flex-shrink: 0;">
-                    <label style="font-size: 0.8em; font-weight: bold; display: block;">MIN. GAMES</label>
-                    <input type="number" name="games_called" id="filterMinGames" min="0" value="0"
-                        style="width: 60px; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                <div class="filter-group">
+                    <label class="filter-label">MIN. GAMES</label>
+                    <input type="number" name="games_called" id="filterMinGames" min="0" value="0" class="filter-input">
                 </div>
 
-                <div style="margin-left: auto; flex-shrink: 0;">
-                    <button type="button" onclick="applyFilters()"
-                        style="padding: 10px 20px; background: var(--ref-red); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">APPLY
-                        FILTERS</button>
+                <div class="filter-group filter-actions">
+                    <button type="button" onclick="applyFilters()" class="filter-apply-btn">APPLY FILTERS</button>
                 </div>
             </form>
         </div>
@@ -134,7 +129,7 @@
                 </thead>
                 <tbody id="officialsTableBody">
                     <tr>
-                        <td colspan="6" style="text-align: center; padding: 40px;">
+                        <td colspan="6" class="loading-cell">
                             Loading officials data...
                         </td>
                     </tr>
@@ -197,7 +192,7 @@
             } catch (error) {
                 console.error('Error loading officials data:', error);
                 document.getElementById('officialsTableBody').innerHTML =
-                    '<tr><td colspan="6" style="text-align: center; padding: 40px; color: red;">Error loading data. Please refresh.</td></tr>';
+                    '<tr><td colspan="6" class="loading-cell error-cell">Error loading data. Please refresh.</td></tr>';
             }
         }
 
@@ -281,7 +276,7 @@
             const tbody = document.getElementById('officialsTableBody');
 
             if (officials.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">No officials match the current filters.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="loading-cell">No officials match the current filters.</td></tr>';
                 return;
             }
 
@@ -505,21 +500,21 @@
 
             function toggleFiltersBasedOnWidth() {
                 if (window.innerWidth <= 768) {
-                    filterToggle.style.display = 'block';
-                    collapsibleFilters.style.display = collapsibleFilters.classList.contains('open') ? 'flex' : 'none';
+                    filterToggle.classList.add('visible');
+                    if (!collapsibleFilters.classList.contains('open')) {
+                        collapsibleFilters.classList.add('hidden');
+                    } else {
+                        collapsibleFilters.classList.remove('hidden');
+                    }
                 } else {
-                    filterToggle.style.display = 'none';
-                    collapsibleFilters.style.display = 'flex';
+                    filterToggle.classList.remove('visible');
+                    collapsibleFilters.classList.remove('hidden');
                 }
             }
 
             filterToggle.addEventListener('click', function () {
                 collapsibleFilters.classList.toggle('open');
-                if (collapsibleFilters.style.display === 'none') {
-                    collapsibleFilters.style.display = 'flex';
-                } else {
-                    collapsibleFilters.style.display = 'none';
-                }
+                collapsibleFilters.classList.toggle('hidden');
             });
 
             window.addEventListener('resize', toggleFiltersBasedOnWidth);

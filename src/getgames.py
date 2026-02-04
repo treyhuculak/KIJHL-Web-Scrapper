@@ -181,24 +181,41 @@ def parse_kijhl_game(data: dict) -> dict:
         periods = data.get('periods', [])
         fight_count = 0
         major_penalty_count = 0
+        notable_penalties = []
 
         for period in periods:
             penalties = period.get('penalties', [])
             for penalty in penalties:
                 description = penalty.get('description', '')
                 minutes = penalty.get('minutes', 0)
-                if minutes == 5 and description.startswith('Fighting') and penalty.get('isPowerPlay') == False:
-                    fight_count += 1
-                elif minutes == 5:
-                    major_penalty_count += 1
+                player = penalty.get('takenBy', {})
+
+                if minutes == 5:
+                    formatted_penalty = {'period': penalty.get('period', '').get('longName', ''),
+                                      'time': penalty.get('time', ''),
+                                        'team': penalty.get('againstTeam', '').get('abbreviation', ''),
+                                        'minutes': minutes,
+                                        'player_name_number': player.get('firstName', 'Unknown').rstrip().title() + ' ' +
+                                                                player.get('lastName', 'Unknown').rstrip().title() + ' #' + 
+                                                                str(player.get('jerseyNumber', '0')),
+                                        'description': description}
+                    
+                    notable_penalties.append(formatted_penalty)
+
+                    if description.startswith('Fighting') and penalty.get('isPowerPlay') == False:
+                        fight_count += 1
+                    else:
+                        major_penalty_count += 1
 
         if fight_count % 2 != 0:
             fight_count -= 1
             major_penalty_count += 1  # Must include a one-man fight major penalty
 
-        return fight_count // 2, major_penalty_count
+        fight_count = fight_count // 2
+
+        return fight_count, major_penalty_count, notable_penalties
     
-    fight_count, major_penalty_count = get_fight_and_major_penalty_count()
+    fight_count, major_penalty_count, notable_penalties = get_fight_and_major_penalty_count()
 
     stats = {
         'teams': {
@@ -217,7 +234,8 @@ def parse_kijhl_game(data: dict) -> dict:
             'visitor': visiting.get('stats', {}).get('penaltyMinuteCount', 0),
             'home': home.get('stats', {}).get('penaltyMinuteCount', 0),
             'fight_count': fight_count,
-            'major_penalty_count': major_penalty_count
+            'major_penalty_count': major_penalty_count,
+            'notable_penalties': notable_penalties
         },
         'officials': {
             'referees': [
@@ -234,8 +252,6 @@ def parse_kijhl_game(data: dict) -> dict:
         }
     }
 
-    print (stats['pims']['fight_count'], stats['pims']['major_penalty_count'])
-
     return stats
 
 def parse_whl_game(data: dict) -> dict:
@@ -251,18 +267,34 @@ def parse_whl_game(data: dict) -> dict:
         penalties = gamesummary.get('penalties', [])
         fight_count = 0
         major_penalty_count = 0
+        notable_penalties = []
 
         for penalty in penalties:
-            if penalty.get('offence') == '54' and penalty.get('minutes') == 5 and penalty.get('pp') == '0':
-                fight_count += 1
-            elif penalty.get('minutes') == 5:
-                major_penalty_count += 1
+            if penalty.get('minutes', 0) == 5:
+                player = penalty.get('player_penalized_info', {})
+
+                formatted_penalty = {'period': penalty.get('period', ''),
+                                   'time': penalty.get('time_off_formatted', ''),
+                                   'team': player.get('team_code', ''),
+                                   'minutes': penalty.get('minutes', 0),
+                                   'player_name_number': player.get('first_name', 'Unknown').rstrip().title() + ' ' +
+                                                         player.get('last_name', 'Unknown').rstrip().title() + ' #' + str(player.get('jersey_number', '0')),
+                                    'description': penalty.get('lang_penalty_description', '')}
+                
+                notable_penalties.append(formatted_penalty)
+
+                if penalty.get('offence') == '54' and penalty.get('pp') == '0':
+                    fight_count += 1
+                else:
+                    major_penalty_count += 1
 
         if fight_count % 2 != 0:
             fight_count -= 1
             major_penalty_count += 1  # Must include a one-man fight major penalty
+        
+        fight_count = fight_count // 2
 
-        return fight_count // 2, major_penalty_count
+        return fight_count, major_penalty_count, notable_penalties
     
     # Extract team info
     home_team = gamesummary.get('home', {})
@@ -270,7 +302,7 @@ def parse_whl_game(data: dict) -> dict:
 
     goals = gamesummary.get('totalGoals', {})
     pims = gamesummary.get('pimTotal', {})
-    fight_count, major_penalty_count = get_fight_and_major_penalty_count()
+    fight_count, major_penalty_count, notable_penalties = get_fight_and_major_penalty_count()
     officials = gamesummary.get('officialsOnIce', [])
     referees = [['Unknown', '0'], ['Unknown', '0']]
     linesmen = [["Unknown", '0'], ["Unknown", '0']]
@@ -302,7 +334,8 @@ def parse_whl_game(data: dict) -> dict:
             'visitor': pims.get('visitor', 0),
             'home': pims.get('home', 0),
             'fight_count': fight_count,
-            'major_penalty_count': major_penalty_count
+            'major_penalty_count': major_penalty_count,
+            'notable_penalties': notable_penalties
         },
         'officials': {
             'referees': referees,
@@ -314,8 +347,6 @@ def parse_whl_game(data: dict) -> dict:
             'venue': gamesummary.get('venue', 'Unknown')
         }
     }
-
-    print (stats['pims']['fight_count'], stats['pims']['major_penalty_count'])
 
     return stats
 

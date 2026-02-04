@@ -14,12 +14,14 @@
             primary: '#cc0000',    // Red
             secondary: '#1a1a1a',  // Black
             accent: '#ffffff',     // White
+            boxShadow: '#990000',  // Darker Red
             name: 'KIJHL'
         },
         'whl': {
             primary: '#e06900',    // Orange
             secondary: '#1a1a1a',  // Black
             accent: '#ffffff',     // White
+            boxShadow: '#b35000',  // Darker Orange
             name: 'WHL'
         }
     };
@@ -31,6 +33,7 @@
     document.documentElement.style.setProperty('--ref-red', colors.primary);
     document.documentElement.style.setProperty('--ref-black', colors.secondary);
     document.documentElement.style.setProperty('--ref-white', colors.accent);
+    document.documentElement.style.setProperty('--ref-red-dark', colors.boxShadow);
 </script>
 {% endblock %}
 
@@ -146,6 +149,24 @@
             }
         });
 
+        // Toggle function for notable penalties view
+        function toggleNotablePenalties(gameNumber) {
+            const container = document.getElementById(`pims-container-${gameNumber}`);
+            const pimsInfo = container.querySelector('.pims-info');
+            const notableList = document.getElementById(`notable-list-${gameNumber}`);
+            const toggleBtn = container.querySelector('.notable-toggle-btn');
+            
+            if (notableList.style.display === 'none') {
+                pimsInfo.style.display = 'none';
+                notableList.style.display = 'block';
+                if (toggleBtn) toggleBtn.classList.add('active');
+            } else {
+                pimsInfo.style.display = 'grid';
+                notableList.style.display = 'none';
+                if (toggleBtn) toggleBtn.classList.remove('active');
+            }
+        }
+
         function displayResults(data) {
             // Display stats
             if (data.success) {
@@ -220,18 +241,54 @@
                                 <div class="team-score ${game.home_goals < game.visitor_goals ? 'losing-score' : ''}">${game.home_goals}</div>
                             </div>
                         </div>
-                        <div class="pims-info">
-                            <div class="pim-item">
-                                <div class="label">${game.visitor_abbrv} PIMs</div>
-                                <div class="value">${game.visitor_pims}</div>
+                        <div class="pims-container" id="pims-container-${game.game_number}">
+                            <div class="pims-info">
+                                <div class="pim-item">
+                                    <div class="label">${game.visitor_abbrv} PIMs</div>
+                                    <div class="value">${game.visitor_pims}</div>
+                                </div>
+                                <div class="pim-item">
+                                    <div class="label">Combined</div>
+                                    <div class="value total-pims">${game.total_pims}</div>
+                                </div>
+                                <div class="pim-item">
+                                    <div class="label">${game.home_abbrv} PIMs</div>
+                                    <div class="value">${game.home_pims}</div>
+                                </div>
+                                <div class="pim-item penalty-detail">
+                                    <div class="label">Fights</div>
+                                    <div class="value">${game.fight_count || 0}</div>
+                                </div>
+                                <div class="pim-item penalty-detail toggle-cell">
+                                    ${(game.notable_penalties && game.notable_penalties.length > 0) ? `
+                                    <button class="notable-toggle-btn" onclick="toggleNotablePenalties('${game.game_number}')">
+                                        <span class="toggle-icon">▼</span> Details
+                                    </button>
+                                    ` : `<div class="no-majors">-</div>`}
+                                </div>
+                                <div class="pim-item penalty-detail">
+                                    <div class="label">Maj. Pen.</div>
+                                    <div class="value">${game.major_penalty_count || 0}</div>
+                                </div>
                             </div>
-                            <div class="pim-item">
-                                <div class="label">Combined</div>
-                                <div class="value total-pims">${game.total_pims}</div>
-                            </div>
-                            <div class="pim-item">
-                                <div class="label">${game.home_abbrv} PIMs</div>
-                                <div class="value">${game.home_pims}</div>
+                            <div class="notable-penalties-list" id="notable-list-${game.game_number}" style="display: none;">
+                                <div class="notable-header">
+                                    <span>Major Penalties & Fights</span>
+                                    <button class="notable-close-btn" onclick="toggleNotablePenalties('${game.game_number}')">
+                                        ✕ Close
+                                    </button>
+                                </div>
+                                ${(game.notable_penalties && game.notable_penalties.length > 0) ? 
+                                    game.notable_penalties.map(p => `
+                                    <div class="notable-penalty-row">
+                                        <img src="/static/logos/${game.league}/${p.team}.png" alt="${p.team}" class="penalty-team-logo" onerror="this.style.display='none'">
+                                        <div class="penalty-player">${p.player_name_number}</div>
+                                        <div class="penalty-desc">${p.description}</div>
+                                        <div class="penalty-period">${p.period}</div>
+                                        <div class="penalty-time">${p.time}</div>
+                                    </div>
+                                    `).join('') 
+                                : '<div class="no-penalties-msg">No major penalties in this game</div>'}
                             </div>
                         </div>
                         ${(game.referees && game.referees.length > 0) || (game.linesmen && game.linesmen.length > 0) ? `
