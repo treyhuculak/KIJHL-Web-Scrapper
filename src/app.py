@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 
 # gcloud builds submit --tag us-west1-docker.pkg.dev/kijhl-app/kijhl-app-repo/kijhl-img:v4.2
+# gcloud config set project zebrazone  
 
 # Import new API-based functions
 from getgames import get_game_ids_by_date, fetch_game_api
