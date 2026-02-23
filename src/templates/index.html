@@ -173,7 +173,7 @@
                 statsContainer.innerHTML = `
                     <div class="stat-card">
                         <h3>${data.dirty_team || 'N/A'}</h3>
-                        <p>Dirtiest Team Award</p>
+                        <p>Dirtiest Team</p>
                     </div>
                     <div class="stat-card">
                         <h3>${data.total_games}</h3>
@@ -181,7 +181,7 @@
                     </div>
                     <div class="stat-card">
                         <h3>${data.jungle_score}</h3>
-                        <p>Jungle Score (Avg PIMs)</p>
+                        <p>League AVG PIMs</p>
                     </div>
                 `;
             }
@@ -297,7 +297,11 @@
                             <div class="official-group">
                                 <div class="official-label">Referees</div>
                                 <div class="official-names">
-                                      ${game.referees.map(r => r[1] && r[1] !== '0' ? `${r[0]} (${r[1]})` : r[0]).join(', ')}
+                                    ${game.referees.map(r => `
+                                        <div class="official-item">
+                                            ${r[1] && r[1] !== '0' ? `${r[0]} (${r[1]})` : r[0]}
+                                        </div>
+                                    `).join('')}
                                 </div>
                             </div>
                             ` : ''}
@@ -305,7 +309,11 @@
                             <div class="official-group">
                                 <div class="official-label">Linesmen</div>
                                 <div class="official-names">
-                                      ${game.linesmen.map(l => l[1] && l[1] !== '0' ? `${l[0]} (${l[1]})` : l[0]).join(', ')}
+                                    ${game.linesmen.map(l => `
+                                        <div class="official-item">
+                                            ${l[1] && l[1] !== '0' ? `${l[0]} (${l[1]})` : l[0]}
+                                        </div>
+                                    `).join('')}
                                 </div>
                             </div>
                             ` : ''}

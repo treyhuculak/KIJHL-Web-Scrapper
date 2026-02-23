@@ -34,28 +34,30 @@ def get_logo_path(league: str, team_abbrev: str) -> str:
         return f"static/logos/{league}/{team_abbrev}.png"
     return ''
 
-def get_season_id_by_date(date_str):
+def get_season_id_by_date(date_str, league='kijhl'):
     """
-    Determine the season ID based on the provided date.
-    This is a placeholder function and should be implemented
-    based on actual season date ranges.
+    Determine the season ID based on the provided date and league.
+    Uses season_start_dates and season_ids from league_config.
+    
+    Args:
+        date_str: Date string in YYYY-MM-DD format
+        league: League identifier (e.g., 'kijhl', 'whl')
+    
+    Returns:
+        int: Season ID if found, 0 otherwise
     """
-    season_start_dates = {
-        '2025-2026 (Playoffs)'  : ['2026-02-19', 66],
-        '2025-2026 (Reg Season)': ['2025-09-19', 65],
-        '2024-2025 (Playoffs)'  : ['2025-02-28', 63],
-        '2024-2025 (Reg Season)': ['2024-09-20', 61],
-        '2023-2024 (Playoffs)'  : ['2024-02-23', 59],
-        '2023-2024 (Reg Season)': ['2023-09-22', 56],
-        '2022-2023 (Playoffs)'  : ['2023-02-17', 54],
-        '2022-2023 (Reg Season)': ['2022-09-23', 52],
-        '2021-2022 (Playoffs)'  : ['2022-02-22', 51],
-        '2021-2022 (Reg Season)': ['2021-10-01', 49]
-    }
+    league_config = LEAGUES.get(league)
+    if not league_config:
+        return 0
+    
+    season_start_dates = league_config['season_start_dates']
+    season_ids = league_config['season_ids']
+    
     date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-    for season, (start_date, season_id) in season_start_dates.items():
+    # Iterate most-recent-first (dict is already ordered that way in league_config)
+    for season_name, start_date in season_start_dates.items():
         if date_obj >= datetime.strptime(start_date, '%Y-%m-%d'):
-            return season_id
+            return season_ids.get(season_name, 0)
     return 0
 
 def scrape_games(date, league='kijhl'):
@@ -91,7 +93,7 @@ def scrape_games(date, league='kijhl'):
     
     try:
         # 1. Fetch Game IDs directly from API
-        season_id = get_season_id_by_date(date)
+        season_id = get_season_id_by_date(date, league=league)
         if not season_id:
             results['errors'].append("No season found for the given date")
             results['elapsed_time'] = time.time() - start_time
@@ -275,33 +277,11 @@ def get_official_stats(name):
     
     stats = db_manager.get_official_career_stats(league, name)
     
-    # Map season IDs to readable names (shared across leagues, specific mappings per league would go here)
-    season_names = {
-        # KIJHL seasons
-        66: '2025-26 Playoffs',
-        65: '2025-26 Regular Season',
-        63: '2024-25 Playoffs',
-        61: '2024-25 Regular Season',
-        59: '2023-24 Playoffs',
-        56: '2023-24 Regular Season',
-        54: '2022-23 Playoffs',
-        52: '2022-23 Regular Season',
-        51: '2021-22 Playoffs',
-        49: '2021-22 Regular Season',
-        # WHL seasons
-        292: '2025-26 Playoffs',
-        289: '2025-26 Regular Season',
-        288: '2024-25 Playoffs',
-        285: '2024-25 Regular Season',
-        284: '2023-24 Playoffs',
-        281: '2023-24 Regular Season',
-        268: '2022-23 Playoffs',
-        265: '2022-23 Regular Season',
-        264: '2021-22 Playoffs',
-        261: '2021-22 Regular Season',
-        260: '2020-21 Playoffs',
-        257: '2020-21 Regular Season',
-    }
+    # Build season ID -> readable name mapping dynamically from league_config
+    season_names = {}
+    for league_key, league_cfg in LEAGUES.items():
+        for season_label, sid in league_cfg['season_ids'].items():
+            season_names[sid] = season_label
     
     # Add readable season names to each season record
     for season in stats.get('seasons', []):
@@ -370,7 +350,7 @@ def daily_update():
 
     if results['success'] and results['games']:
         print(f"   > Found {len(results['games'])} games. Saving...")
-        season_id_actual = get_season_id_by_date(date_str)
+        season_id_actual = get_season_id_by_date(date_str, league=league)
         for game in results['games']:
             db_manager.save_game_results(league, game, season_id=season_id_actual)
     else:

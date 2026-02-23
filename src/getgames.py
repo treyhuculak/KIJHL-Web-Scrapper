@@ -89,6 +89,7 @@ def get_game_ids_by_date_kijhl(date_str: str, season_id: int) -> list:
                     if 'game_id' in row:
                         game_ids.append(row['game_id'])
         
+        print(f"Fetched {len(game_ids)} game IDs for KIJHL on {date_str} (Season ID: {season_id})")
         return game_ids
 
     except requests.exceptions.RequestException as e:

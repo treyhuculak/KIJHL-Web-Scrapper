@@ -17,6 +17,18 @@ LEAGUES = {
             '2025-2026 (Reg Season)': 65,
             '2025-2026 (Playoffs)'  : 66,
         },
+        'season_start_dates': {
+            '2025-2026 (Playoffs)': '2026-03-01',
+            '2025-2026 (Reg Season)': '2025-09-19',
+            '2024-2025 (Playoffs)': '2025-02-28',
+            '2024-2025 (Reg Season)': '2024-09-20',
+            '2023-2024 (Playoffs)': '2024-02-23',
+            '2023-2024 (Reg Season)': '2023-09-22',
+            '2022-2023 (Playoffs)': '2023-02-17',
+            '2022-2023 (Reg Season)': '2022-09-23',
+            '2021-2022 (Playoffs)': '2022-02-22',
+            '2021-2022 (Reg Season)': '2021-10-01'
+        },
         'color_scheme': {
             'primary': '#cc0000',      # Red
             'secondary': '#1a1a1a',    # Black
@@ -46,6 +58,20 @@ LEAGUES = {
             '2024-2025 (Playoffs)': 288,
             '2025-2026 (Regular Season)': 289,
             '2025-2026 (Playoffs)': 292,
+        },
+        'season_start_dates': {
+            '2025-2026 (Playoffs)': '2026-02-19',
+            '2025-2026 (Regular Season)': '2025-09-01',
+            '2024-2025 (Playoffs)': '2025-02-28',
+            '2024-2025 (Regular Season)': '2024-09-01',
+            '2023-2024 (Playoffs)': '2024-02-23',
+            '2023-2024 (Regular Season)': '2023-09-01',
+            '2022-2023 (Playoffs)': '2023-02-17',
+            '2022-2023 (Regular Season)': '2022-09-01',
+            '2021-2022 (Playoffs)': '2022-02-22',
+            '2021-2022 (Regular Season)': '2021-09-01',
+            '2020-2021 (Playoffs)': '2021-02-19',
+            '2020-2021 (Regular Season)': '2020-09-01',
         },
         'color_scheme': {
             'primary': '#FF8C00',      # Orange
