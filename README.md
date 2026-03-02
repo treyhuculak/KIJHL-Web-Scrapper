@@ -1,6 +1,6 @@
-# KIJHL Referee Statistics Tracker
+# ZebraZone
 
-**Live Application**: [**KIJHL Game Scraper and Referee Stats Tracker**](https://kijhl-img-135337671384.us-west1.run.app)
+**Live Application**: [**ZebraZone**](https://zebrazone-622801847364.us-west1.run.app/)
 
 A comprehensive web scraping and analytics platform for tracking referee performance statistics in the Kootenay International Junior Hockey League (KIJHL). This application collects game data, calculates penalty minutes per game metrics for officials, and provides an intuitive web interface for querying historical and real-time statistics.
 
@@ -36,7 +36,7 @@ This project demonstrates full-stack development and cloud deployment skills by 
 
 ## 🚀 Getting Started
 
-The application is live at [**kijhl-img-135337671384.us-west1.run.app**](https://kijhl-img-135337671384.us-west1.run.app)
+The application is live at [**https://zebrazone-622801847364.us-west1.run.app/**](https://zebrazone-622801847364.us-west1.run.app/)
 
 ## 🔌 API Endpoints
 
