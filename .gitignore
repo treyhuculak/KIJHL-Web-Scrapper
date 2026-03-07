@@ -6,3 +6,5 @@ src/.dockerignore
 src/compose.yaml
 src/README.Docker.md
 .venv
+__pycache__/
+.coverage

@@ -15,7 +15,7 @@ LEAGUES = {
             '2024-2025 (Reg Season)': 61,
             '2024-2025 (Playoffs)'  : 63,
             '2025-2026 (Reg Season)': 65,
-            '2025-2026 (Playoffs)'  : 66,
+            '2025-2026 (Playoffs)'  : 67,
         },
         'season_start_dates': {
             '2025-2026 (Playoffs)': '2026-03-01',
