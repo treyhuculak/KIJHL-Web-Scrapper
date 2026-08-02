@@ -1,10 +1,19 @@
+# Secrets — never commit
+serviceAccountKey.json
 src/*.json
+.env
+
+# Dependencies and build output
+node_modules/
+dist/
+.venv
+__pycache__/
+.coverage
+
+# Legacy files kept out of version control
 src/backfill.py
 src/database.py
 src/Dockerfile
 src/.dockerignore
 src/compose.yaml
 src/README.Docker.md
-.venv
-__pycache__/
-.coverage
