@@ -1,4 +1,5 @@
 """HTTP endpoints."""
+
 from datetime import date
 
 import httpx
@@ -14,7 +15,9 @@ router = APIRouter(prefix="/api")
 @router.get("/leagues")
 async def list_leagues() -> list[League]:
     """Every league the app can show."""
-    return [League(id=league.id, name=league.name) for league in LEAGUES.values()]
+    return [
+        League(id=league.id, name=league.name, accent=league.accent) for league in LEAGUES.values()
+    ]
 
 
 @router.get("/games")

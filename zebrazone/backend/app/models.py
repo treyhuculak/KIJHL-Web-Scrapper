@@ -1,4 +1,5 @@
 """The data the app works with."""
+
 from datetime import date
 
 from pydantic import BaseModel
@@ -9,6 +10,7 @@ class League(BaseModel):
 
     id: str
     name: str
+    accent: str
 
 
 class Team(BaseModel):
@@ -18,6 +20,19 @@ class Team(BaseModel):
     city: str
     nickname: str
     goals: int
+    pims: int
+    logo: str
+
+
+class Penalty(BaseModel):
+    """A penalty worth calling out on its own — a major or a misconduct."""
+
+    team_code: str
+    player: str
+    infraction: str
+    minutes: int
+    period: str
+    time: str
 
 
 class Game(BaseModel):
@@ -26,8 +41,10 @@ class Game(BaseModel):
     id: str
     date: date
     status: str
+    final: bool
     venue: str
     start_time: str | None
     attendance: int | None
     home: Team
     visitor: Team
+    notable_penalties: list[Penalty]

@@ -1,118 +1,507 @@
-main {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 40px 20px 80px;
+/*
+ * Mobile first. The base rules are what a phone gets; the one media query at
+ * the bottom adds breathing room once there's a wider screen to spend.
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  /* svh, so the footer isn't hidden under a phone's collapsing browser bar. */
+  min-height: 100svh;
+}
+
+/* Referee stripes along one edge — the page's top and bottom trim. */
+.masthead,
+.colophon {
+  background-color: var(--paper);
+  background-image: var(--stripes);
+  background-repeat: no-repeat;
+  background-size: 100% 10px;
+}
+
+/* Masthead */
+
+.masthead {
+  background-position: top;
+  border-bottom: 1px solid var(--line);
+  padding: 28px 16px 18px;
+  text-align: center;
+}
+
+.wordmark {
+  font-size: clamp(28px, 8vw, 44px);
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.wordmark span {
+  color: var(--armband);
+}
+
+.tagline {
+  /* Held open so the page doesn't jump when the league name arrives. */
+  min-height: 1.4em;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 /* Controls */
 
 .controls {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 28px;
+  justify-content: center;
+  gap: 10px 14px;
+  padding: 10px 14px;
+  background: var(--ink);
+  border-bottom: 4px solid var(--armband);
+  box-shadow: 0 4px 10px rgb(0 0 0 / 0.15);
 }
 
 .controls label {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
+  align-items: center;
+  gap: 8px;
+  /* Lets a control shrink instead of pushing the bar past the screen. */
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: var(--faded);
+}
+
+/*
+ * A dropdown of leagues and a date field explain themselves, and on a phone the
+ * bar is better off one row tall. The words stay for screen readers.
+ */
+.field-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .controls select,
 .controls input {
+  min-width: 0;
   font: inherit;
-  color: var(--text-strong);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  /* 16px, or iOS Safari zooms the page in when a control takes focus. */
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--paper);
+  background: #2a2b30;
+  border: 1px solid #3c3d44;
   border-radius: 6px;
-  padding: 8px 10px;
+  padding: 9px 10px;
+  /* Keeps the native date picker and its icon legible on the dark bar. */
+  color-scheme: dark;
 }
 
-.controls select:focus,
-.controls input:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+.controls select:focus-visible,
+.controls input:focus-visible {
+  outline: 2px solid var(--armband);
+  outline-offset: 2px;
 }
 
-/* Messages */
+/* Content */
+
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 22px 14px 44px;
+}
 
 .message {
-  padding: 32px 0;
+  padding: 48px 0;
   text-align: center;
+  color: var(--muted);
 }
 
 .message.error {
-  color: #c0392b;
+  color: var(--armband);
+  font-weight: 600;
 }
 
 /* Games */
 
 .games {
   display: grid;
+  /* min() keeps a card from forcing the page wider than a narrow phone. */
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 12px;
 }
 
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px 18px;
+  background: var(--paper);
+  border-left: 8px solid var(--ink);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 14px 14px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
 }
 
-.card-header,
-.card-footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 13px;
+/* Only pointers get the slide-and-blush; a touch screen would stick in it. */
+@media (hover: hover) {
+  .card {
+    transition:
+      transform 0.15s,
+      border-color 0.15s,
+      box-shadow 0.15s;
+  }
+
+  .card:hover {
+    transform: translateX(3px);
+    border-left-color: var(--armband);
+    box-shadow: 0 8px 20px rgb(0 0 0 / 0.1);
+  }
 }
 
 .card-header {
-  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
 }
 
-.card-footer {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-}
-
+/* Games still to come wear the armband colour; finished ones settle to black. */
 .status {
-  font-weight: 600;
+  background: var(--armband);
+  color: var(--paper);
+  border-radius: 3px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--accent);
 }
+
+.status.final {
+  background: var(--ink);
+}
+
+/* Teams */
 
 .team {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px 0;
+  padding: 10px 0;
 }
 
+.team-logo {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+/* Shown in the logo's place when a team has no usable image. */
 .team-code {
+  flex: none;
   width: 44px;
+  padding: 5px 0;
+  text-align: center;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 4px;
+  font-size: 12px;
   font-weight: 700;
-  color: var(--text-strong);
+  letter-spacing: 0.5px;
 }
 
 .team-name {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.team-city {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.team-nickname {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  /* A long nickname shouldn't push the score off the card. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .team-goals {
-  font-size: 20px;
+  flex: none;
+  min-width: 38px;
+  text-align: right;
+  font-size: 28px;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
-.team-won .team-name,
-.team-won .team-goals {
+/* The loser fades back so the result reads at a glance. */
+.team.lost .team-logo {
+  opacity: 0.4;
+}
+
+.team.lost .team-code {
+  background: var(--faded);
+}
+
+.team.lost .team-nickname,
+.team.lost .team-goals {
+  color: var(--faded);
+}
+
+.attendance {
+  flex: none;
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Penalty minutes */
+
+.pims {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.pim {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 0;
+}
+
+.pim-label {
+  font-size: 10px;
   font-weight: 700;
-  color: var(--text-strong);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pim-value {
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.pim.total .pim-value {
+  color: var(--armband);
+}
+
+/* Majors and misconducts, behind a disclosure */
+
+.notable {
+  border-top: 1px solid var(--line);
+}
+
+.notable summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 0;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--armband);
+  /* Drop the browser's triangle for one that turns with the open state. */
+  list-style: none;
+}
+
+.notable summary::-webkit-details-marker {
+  display: none;
+}
+
+.notable summary::after {
+  content: '▾';
+  font-size: 13px;
+  transition: transform 0.15s;
+}
+
+.notable[open] summary::after {
+  transform: rotate(180deg);
+}
+
+.penalties {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 0 0 8px;
+  list-style: none;
+}
+
+.penalty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--wash);
+  border-radius: 6px;
+}
+
+.penalty-team {
+  flex: none;
+  width: 38px;
+  padding: 3px 0;
+  text-align: center;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.penalty-what {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.penalty-player {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.penalty-infraction {
+  font-size: 11px;
+  color: var(--muted);
+  /* Infraction names run long and shouldn't widen the card. */
+  overflow-wrap: anywhere;
+}
+
+.penalty-when {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+
+.penalty-minutes {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--armband);
+}
+
+.penalty-time {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* The venue gets the whole width down here, so it rarely has to wrap. */
+.card-footer {
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.venue {
+  overflow-wrap: anywhere;
+}
+
+/* Colophon */
+
+.colophon {
+  background-position: bottom;
+  border-top: 4px solid var(--armband);
+  padding: 22px 16px 30px;
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Room to spread out, once there's room to spread out. */
+@media (min-width: 600px) {
+  .masthead {
+    padding: 44px 20px 26px;
+  }
+
+  .tagline {
+    margin-top: 8px;
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+
+  .controls {
+    gap: 12px 24px;
+    padding: 14px 20px;
+  }
+
+  .field-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  main {
+    padding: 32px 20px 64px;
+  }
+
+  .games {
+    gap: 16px;
+  }
+
+  .card {
+    padding: 14px 20px 16px;
+  }
+
+  .card-header {
+    padding-bottom: 12px;
+  }
+
+  .team {
+    gap: 14px;
+    padding: 12px 0;
+  }
+
+  .team-goals {
+    min-width: 42px;
+    font-size: 30px;
+  }
+
+  .colophon {
+    padding: 26px 20px 36px;
+    font-size: 12px;
+  }
 }

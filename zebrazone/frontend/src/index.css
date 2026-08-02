@@ -1,41 +1,55 @@
-:root {
-  --text: #6b6375;
-  --text-strong: #08060d;
-  --bg: #fff;
-  --surface: #fff;
-  --border: #e5e4e7;
-  --accent: #aa3bff;
+/*
+ * The look: referee stripes in black and white, plus the league's armband
+ * colour — the band a referee wears to tell them apart from the linesmen.
+ *
+ * `--armband` is rewritten on <html> whenever the league changes (see App.tsx);
+ * the colour itself lives in the backend's league config, so a new league is
+ * still a one-line change.
+ *
+ * Light only, on purpose: white ice and black-and-white stripes are the brand.
+ */
 
-  font: 16px/1.45 system-ui, 'Segoe UI', Roboto, sans-serif;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+:root {
+  --ink: #1a1a1a;
+  --paper: #ffffff;
+  --wash: #f2f2f3;
+  --muted: #6f7278;
+  --faded: #a3a6ac;
+  --line: #e6e6e8;
+
+  /* Fallback for before the league list arrives. */
+  --armband: #cc0000;
+
+  /* The stripes themselves, used as a trim along the page's top and bottom. */
+  --stripes: repeating-linear-gradient(
+    90deg,
+    var(--ink) 0 20px,
+    var(--paper) 20px 40px
+  );
+
+  font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
+  color: var(--ink);
+  background: var(--wash);
+  color-scheme: light;
   -webkit-font-smoothing: antialiased;
+  /* Stops iOS inflating text when a phone is turned sideways. */
+  -webkit-text-size-adjust: 100%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-strong: #f3f4f6;
-    --bg: #16171d;
-    --surface: #1f2028;
-    --border: #2e303a;
-    --accent: #c084fc;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  /* Nothing here is meant to be wider than the screen. `clip` rather than
+     `hidden` so it doesn't break the sticky controls. */
+  overflow-x: clip;
 }
 
-h1 {
-  font-size: 32px;
-  font-weight: 600;
-  letter-spacing: -0.5px;
-  color: var(--text-strong);
-  margin: 0 0 24px;
-}
-
+h1,
 p {
   margin: 0;
 }
