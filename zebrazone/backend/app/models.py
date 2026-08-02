@@ -35,6 +35,16 @@ class Penalty(BaseModel):
     time: str
 
 
+class Official(BaseModel):
+    """One of the four officials who worked the game."""
+
+    name: str
+    role: str
+    """'Referee' or 'Linesperson', without the slot number the feed appends."""
+    number: int | None
+    """Their jersey number. Some leagues don't give their officials one."""
+
+
 class Game(BaseModel):
     """A single game."""
 
@@ -48,3 +58,4 @@ class Game(BaseModel):
     home: Team
     visitor: Team
     notable_penalties: list[Penalty]
+    officials: list[Official]

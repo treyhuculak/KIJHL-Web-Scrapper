@@ -9,12 +9,13 @@ the platform.
 """
 
 import asyncio
+import re
 from datetime import date
 
 import httpx
 
 from .config import LeagueConfig
-from .models import Game, Penalty, Team
+from .models import Game, Official, Penalty, Team
 
 FEED_URL = "https://lscluster.hockeytech.com/feed/"
 TIMEOUT_SECONDS = 15
@@ -22,6 +23,13 @@ TIMEOUT_SECONDS = 15
 # The feed sorts every penalty into one of these classes. Minors are routine;
 # these are the ones worth listing out.
 NOTABLE_CLASSES = {"Major", "Misconduct"}
+
+# An official is described by role and slot, e.g. 'Referee 1'. The slot says
+# nothing a reader needs, so it comes off.
+OFFICIAL_SLOT = re.compile(r"\s*\d+$")
+
+# The feed still says 'Linesman'. We say linesperson, everywhere.
+ROLE_NAMES = {"Linesman": "Linesperson"}
 
 
 async def fetch_games(league: LeagueConfig, day: date) -> list[Game]:
@@ -121,7 +129,27 @@ def _read_game(entry: dict, summary: dict, logos: dict[str, str]) -> Game:
             for penalty in summary.get("penalties") or []
             if penalty.get("penalty_class") in NOTABLE_CLASSES
         ],
+        officials=_read_officials(summary),
     )
+
+
+def _read_officials(summary: dict) -> list[Official]:
+    """The on-ice crew, in the order the feed lists them."""
+    crew = []
+    for entry in summary.get("officialsOnIce") or []:
+        name = f"{entry.get('first_name', '')} {entry.get('last_name', '')}".strip()
+        if not name:
+            continue
+        role = OFFICIAL_SLOT.sub("", entry.get("description") or "").strip()
+        crew.append(
+            Official(
+                name=name,
+                role=ROLE_NAMES.get(role, role) or "Official",
+                # Leagues that don't number their officials send a zero.
+                number=_number(entry.get("jersey_number")) or None,
+            )
+        )
+    return crew
 
 
 def _read_team(entry: dict, side: str, pims: object, logos: dict[str, str]) -> Team:

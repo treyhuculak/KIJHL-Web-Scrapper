@@ -26,6 +26,15 @@ export interface Penalty {
   time: string
 }
 
+/** One of the four officials who worked the game. */
+export interface Official {
+  name: string
+  /** 'Referee' or 'Linesperson'. */
+  role: string
+  /** Jersey number, or null in leagues that don't give officials one. */
+  number: number | null
+}
+
 export interface Game {
   id: string
   date: string
@@ -38,6 +47,7 @@ export interface Game {
   home: Team
   visitor: Team
   notable_penalties: Penalty[]
+  officials: Official[]
 }
 
 async function get<T>(path: string): Promise<T> {

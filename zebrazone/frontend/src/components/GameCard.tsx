@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Game, Penalty, Team } from '../api'
+import type { Game, Official, Penalty, Team } from '../api'
 
 /** The team's logo, falling back to its code if the image won't load. */
 function TeamCrest({ team }: { team: Team }) {
@@ -65,6 +65,34 @@ function PenaltyRow({ penalty }: { penalty: Penalty }) {
   )
 }
 
+/** The crew who worked the game, grouped by role in the order they were listed. */
+function Officials({ officials }: { officials: Official[] }) {
+  const crews = new Map<string, Official[]>()
+  for (const official of officials) {
+    const crew = crews.get(official.role) ?? []
+    crew.push(official)
+    crews.set(official.role, crew)
+  }
+
+  return (
+    <div className="officials">
+      {[...crews].map(([role, crew]) => (
+        <div className="crew" key={role}>
+          <span className="crew-role">{crew.length === 1 ? role : `${role}s`}</span>
+          {crew.map((official) => (
+            <span className="crew-name" key={official.name}>
+              {official.name}
+              {official.number !== null && (
+                <span className="crew-number"> ({official.number})</span>
+              )}
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function GameCard({ game }: { game: Game }) {
   const { visitor, home, final, notable_penalties: notable } = game
 
@@ -102,6 +130,8 @@ export function GameCard({ game }: { game: Game }) {
           </ul>
         </details>
       )}
+
+      {game.officials.length > 0 && <Officials officials={game.officials} />}
 
       {game.venue && (
         <footer className="card-footer">

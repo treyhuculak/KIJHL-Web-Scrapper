@@ -1,7 +1,8 @@
 # ZebraZone
 
 Shows every game a hockey league played on a given day: the score, each team's
-penalty minutes, and the majors and misconducts behind them.
+penalty minutes, the majors and misconducts behind them, and the crew who
+worked the game.
 
 Reads the HockeyTech (LeagueStat) feed that all their leagues share, so adding a
 league is one line of config — the response shape is identical for every one.
@@ -100,11 +101,18 @@ crest with its three-letter code as the fallback.
 | Endpoint | Returns |
 |---|---|
 | `GET /api/leagues` | `[{ id, name, accent }]` |
-| `GET /api/games?league=whl&date=2026-01-10` | `[{ id, date, status, final, venue, start_time, attendance, home, visitor, notable_penalties }]` |
+| `GET /api/games?league=whl&date=2026-01-10` | `[{ id, date, status, final, venue, start_time, attendance, home, visitor, notable_penalties, officials }]` |
 
 `home` and `visitor` are `{ code, city, nickname, goals, pims, logo }`.
+
 `notable_penalties` holds the majors and misconducts as
 `{ team_code, player, infraction, minutes, period, time }` — minors are counted
 in `pims` but not listed.
+
+`officials` is the on-ice crew as `{ name, role, number }`. The feed labels them
+'Referee 1', 'Linesman 2' and so on; `hockeytech.py` drops the slot number and
+renames the role to linesperson, so nothing downstream sees the feed's wording.
+`number` is null in leagues that don't number their officials — the KIJHL sends
+a zero for all four.
 
 Interactive docs while the backend runs: http://127.0.0.1:8100/docs
