@@ -1,0 +1,118 @@
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+/* Controls */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.controls select,
+.controls input {
+  font: inherit;
+  color: var(--text-strong);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.controls select:focus,
+.controls input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Messages */
+
+.message {
+  padding: 32px 0;
+  text-align: center;
+}
+
+.message.error {
+  color: #c0392b;
+}
+
+/* Games */
+
+.games {
+  display: grid;
+  gap: 12px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.card-header,
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.card-header {
+  margin-bottom: 12px;
+}
+
+.card-footer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.status {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+}
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.team-code {
+  width: 44px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.team-name {
+  flex: 1;
+}
+
+.team-goals {
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.team-won .team-name,
+.team-won .team-goals {
+  font-weight: 700;
+  color: var(--text-strong);
+}
