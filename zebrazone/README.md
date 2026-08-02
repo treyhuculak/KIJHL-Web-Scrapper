@@ -81,6 +81,17 @@ Add an entry to `LEAGUES` in `backend/app/config.py`:
 It appears in the dropdown automatically, themed in its `accent` colour. No
 parsing code to write — every HockeyTech league returns the same structure.
 
+Add `visible=False` to keep a league out of the picker while you check it. It
+stays reachable at `/api/games?league=<id>`, so an unfinished league can be
+tried without being announced.
+
+A key is scoped to one client code and is cleared for some feed views but not
+others, which is not something you can tell by looking at it. The WIJHL's key,
+for instance, reads schedules but not game summaries, so its games show scores
+and no penalty data. That degrades quietly rather than failing — but if a
+league shows less than you expect, that's the reason, and `GET /api/games` will
+say `Feed type access denied` if the refusal is total.
+
 ## Look and feel
 
 Black-and-white referee stripes trim the top and bottom of the page, and the

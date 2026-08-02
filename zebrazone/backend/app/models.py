@@ -20,7 +20,7 @@ class Team(BaseModel):
     city: str
     nickname: str
     goals: int
-    pims: int
+    pims: int | None
     logo: str
 
 

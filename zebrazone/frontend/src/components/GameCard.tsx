@@ -96,8 +96,10 @@ function Officials({ officials }: { officials: Official[] }) {
 export function GameCard({ game }: { game: Game }) {
   const { visitor, home, final, notable_penalties: notable } = game
 
-  // A game yet to be played has nothing to report; one under way or finished does.
-  const hasPenaltyRecord = final || visitor.pims + home.pims > 0
+  const pims =
+    visitor.pims === null || home.pims === null
+      ? null
+      : { visitor: visitor.pims, home: home.pims, total: visitor.pims + home.pims }
 
   return (
     <article className="card">
@@ -111,11 +113,11 @@ export function GameCard({ game }: { game: Game }) {
       <TeamRow team={visitor} lost={final && visitor.goals < home.goals} />
       <TeamRow team={home} lost={final && home.goals < visitor.goals} />
 
-      {hasPenaltyRecord && (
+      {pims && (final || pims.total > 0) && (
         <div className="pims">
-          <PimCell label={`${visitor.code} PIM`} value={visitor.pims} />
-          <PimCell label="Total" value={visitor.pims + home.pims} total />
-          <PimCell label={`${home.code} PIM`} value={home.pims} />
+          <PimCell label={`${visitor.code} PIM`} value={pims.visitor} />
+          <PimCell label="Total" value={pims.total} total />
+          <PimCell label={`${home.code} PIM`} value={pims.home} />
         </div>
       )}
 

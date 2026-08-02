@@ -32,6 +32,14 @@ OFFICIAL_SLOT = re.compile(r"\s*\d+$")
 ROLE_NAMES = {"Linesman": "Linesperson"}
 
 
+class FeedUnavailable(RuntimeError):
+    """The feed refused, with HTTP 200 and a plain-text body.
+
+    'Client access denied.' when the key doesn't match the client code, 'Feed
+    type access denied.' when the key isn't cleared for that view.
+    """
+
+
 async def fetch_games(league: LeagueConfig, day: date) -> list[Game]:
     """Return every game the league played on `day`."""
     async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
@@ -69,18 +77,21 @@ async def _get(client: httpx.AsyncClient, league: LeagueConfig, **params: str) -
         },
     )
     response.raise_for_status()
-    return response.json()
+    try:
+        return response.json()
+    except ValueError as error:
+        raise FeedUnavailable(response.text.strip()[:80]) from error
 
 
 async def _fetch_summary(client: httpx.AsyncClient, league: LeagueConfig, game_id: str) -> dict:
     """A game's detail view: penalty minutes per team, and every penalty called.
 
     A game whose summary won't load still belongs on the page, just without its
-    penalty numbers.
+    penalty numbers — some leagues aren't cleared to read this view at all.
     """
     try:
         payload = await _get(client, league, feed="gc", tab="gamesummary", game_id=game_id)
-    except httpx.HTTPError:
+    except (httpx.HTTPError, FeedUnavailable):
         return {}
     return payload.get("GC", {}).get("Gamesummary") or {}
 
@@ -98,7 +109,7 @@ async def _fetch_logos(
         payload = await _get(
             client, league, feed="modulekit", view="teamsbyseason", season_id=season_id
         )
-    except httpx.HTTPError:
+    except (httpx.HTTPError, FeedUnavailable):
         return {}
     teams = payload.get("SiteKit", {}).get("Teamsbyseason") or []
     return {team["id"]: team.get("team_logo_url", "") for team in teams}
@@ -159,7 +170,8 @@ def _read_team(entry: dict, side: str, pims: object, logos: dict[str, str]) -> T
         city=entry.get(f"{side}_team_city", ""),
         nickname=entry.get(f"{side}_team_nickname", ""),
         goals=_number(entry.get(f"{side}_goal_count")) or 0,
-        pims=_number(pims) or 0,
+        # None, not 0: a summary we couldn't read is not a penalty-free game.
+        pims=_number(pims),
         logo=logos.get(entry.get(f"{side}_team", ""), ""),
     )
 

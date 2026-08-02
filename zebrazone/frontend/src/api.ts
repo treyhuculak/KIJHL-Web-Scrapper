@@ -12,7 +12,8 @@ export interface Team {
   city: string
   nickname: string
   goals: number
-  pims: number
+  /** Penalty minutes, or null when the league can't serve game summaries. */
+  pims: number | null
   logo: string
 }
 
