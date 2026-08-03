@@ -1,0 +1,12 @@
+{
+  "name": "zebrazone",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Runs both halves of the app locally: npm run locally",
+  "scripts": {
+    "locally": "concurrently -k -n api,web -c cyan,magenta \"cd backend && uvicorn app.main:app --reload --port 8100\" \"cd frontend && npm run dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
