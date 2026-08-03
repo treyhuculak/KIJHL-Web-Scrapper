@@ -1,0 +1,97 @@
+/* The league picker: a tier at a time, a card per league. */
+
+.home-title {
+  font-size: clamp(20px, 6vw, 26px);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* One level of hockey — major junior, junior A, junior B. */
+.tier {
+  margin-top: 22px;
+}
+
+.tier-name {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tiles {
+  display: grid;
+  /* min() keeps a card from forcing the page wider than a narrow phone. */
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/*
+ * A league to choose. It's a .card as well, which is where the paper, the edge
+ * and the hover come from — the league's own colour is set on --edge inline, so
+ * the card's usual black-to-armband edge is that league's throughout.
+ */
+.tile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Doubled up to outrank .card's own padding whichever order they load in. */
+.card.tile {
+  padding: 14px 18px;
+}
+
+.tile-logo {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+/* Holds the place of a logo that hasn't been dropped in yet. */
+.tile-logo.empty {
+  border: 2px dashed var(--line);
+  border-radius: 50%;
+}
+
+/* The logo carries the league's identity; this spells it out. */
+.tile-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+/* The league being viewed sits back and takes a tick. */
+.tile.chosen {
+  background: var(--wash);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.tile.chosen .tile-name::after {
+  content: ' ✓';
+  color: var(--edge);
+  font-size: 16px;
+}
+
+@media (min-width: 600px) {
+  .tiles {
+    gap: 16px;
+  }
+
+  .card.tile {
+    padding: 16px 22px;
+  }
+}

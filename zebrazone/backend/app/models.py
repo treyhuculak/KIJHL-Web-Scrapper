@@ -1,8 +1,21 @@
 """The data the app works with."""
 
 from datetime import date
+from enum import StrEnum
 
 from pydantic import BaseModel
+
+
+class Tier(StrEnum):
+    """The level a league plays at.
+
+    The picker groups leagues under these headings, in the order declared here —
+    so this is also the order the tiers appear on screen.
+    """
+
+    MAJOR = "Major junior"
+    JUNIOR_A = "Junior A"
+    JUNIOR_B = "Junior B"
 
 
 class League(BaseModel):
@@ -11,6 +24,7 @@ class League(BaseModel):
     id: str
     name: str
     accent: str
+    tier: Tier
 
 
 class Team(BaseModel):

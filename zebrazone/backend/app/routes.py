@@ -7,18 +7,26 @@ from fastapi import APIRouter, HTTPException, Query
 
 from .config import LEAGUES
 from .hockeytech import FeedUnavailable, fetch_games
-from .models import Game, League
+from .models import Game, League, Tier
 
 router = APIRouter(prefix="/api")
 
 
 @router.get("/leagues")
 async def list_leagues() -> list[League]:
-    """Every league on offer to the public."""
+    """Every league on offer to the public, major junior first.
+
+    Sorted by tier so the picker can group them from the order it's handed, and
+    config.py never has to be kept in any particular order.
+    """
+    order = list(Tier)
+    on_offer = sorted(
+        (league for league in LEAGUES.values() if league.visible),
+        key=lambda league: order.index(league.tier),
+    )
     return [
-        League(id=league.id, name=league.name, accent=league.accent)
-        for league in LEAGUES.values()
-        if league.visible
+        League(id=league.id, name=league.name, accent=league.accent, tier=league.tier)
+        for league in on_offer
     ]
 
 

@@ -1,0 +1,104 @@
+/* The sticky bar under the masthead: page tabs, and the league they're for. */
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 10px 14px;
+  background: var(--ink);
+  border-bottom: 4px solid var(--armband);
+  box-shadow: 0 4px 10px rgb(0 0 0 / 0.15);
+}
+
+.navbar select {
+  /* Lets the picker shrink instead of pushing the bar past the screen. */
+  min-width: 0;
+  font: inherit;
+  /* 16px, or iOS Safari zooms the page in when a control takes focus. */
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--paper);
+  background: #2a2b30;
+  border: 1px solid #3c3d44;
+  border-radius: 6px;
+  padding: 9px 10px;
+  /* Keeps the dropdown it opens legible against the dark bar. */
+  color-scheme: dark;
+}
+
+.navbar select:focus-visible {
+  outline: 2px solid var(--armband);
+  outline-offset: 2px;
+}
+
+/* Tabs */
+
+.tabs {
+  display: flex;
+  /* Their own height, centred against the taller league picker — stretched, a
+     tab's text would sit at the top of its pill with the slack beneath. */
+  align-items: center;
+  gap: 4px;
+  /* More pages than a phone has room for slide sideways rather than stack. */
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  color: var(--faded);
+}
+
+@media (hover: hover) {
+  .tab {
+    transition:
+      color 0.15s,
+      background 0.15s;
+  }
+
+  .tab:hover {
+    background: #2a2b30;
+    color: var(--paper);
+  }
+}
+
+/* The page you're on wears the armband. */
+.tab.current {
+  background: var(--armband);
+  color: var(--paper);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--armband);
+  outline-offset: 2px;
+}
+
+/* The armband is already under it, so that outline would vanish. */
+.tab.current:focus-visible {
+  outline-color: var(--paper);
+  outline-offset: -4px;
+}
+
+@media (min-width: 600px) {
+  .navbar {
+    gap: 12px 24px;
+    padding: 14px 20px;
+  }
+}

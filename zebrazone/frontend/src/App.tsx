@@ -1,51 +1,61 @@
 import { useEffect, useState } from 'react'
-import { getGames, getLeagues, type Game, type League } from './api'
-import { GameCard } from './components/GameCard'
+import { getLeagues, type League } from './api'
+import { viewFromHash } from './nav'
+import { Navbar } from './components/Navbar'
+import { Games } from './pages/Games'
+import { Home } from './pages/Home'
 import './App.css'
 
-/** Today in the user's own timezone, as YYYY-MM-DD. */
-function today(): string {
-  return new Date().toLocaleDateString('en-CA')
-}
+/**
+ * Where the chosen league is kept. sessionStorage rather than localStorage: the
+ * choice holds for this visit — reloads and page changes included — and the app
+ * asks again next time it's opened fresh.
+ */
+const KEPT = 'zebrazone.league'
 
 export default function App() {
   const [leagues, setLeagues] = useState<League[]>([])
-  const [league, setLeague] = useState('')
-  const [date, setDate] = useState(today())
-
-  const [games, setGames] = useState<Game[]>([])
-  const [loading, setLoading] = useState(false)
+  const [league, setLeague] = useState(() => sessionStorage.getItem(KEPT) ?? '')
+  const [asked, setAsked] = useState(viewFromHash)
   const [error, setError] = useState<string | null>(null)
 
   const selected = leagues.find((option) => option.id === league)
+  // No league, no pages — a link straight to one lands on the chooser instead.
+  const view = league ? asked : 'home'
 
-  // Load the league list once, and start on the first one.
+  /** Switch leagues, staying on whatever page is open. */
+  function choose(id: string) {
+    setLeague(id)
+    sessionStorage.setItem(KEPT, id)
+  }
+
+  /** Choosing one from the picker is the way into a league, so open it. */
+  function enter(id: string) {
+    choose(id)
+    location.hash = 'games'
+  }
+
+  // Load the league list once. A league we were left pointed at can have been
+  // hidden since, so anything not on offer any more sends us back to the chooser.
   useEffect(() => {
     getLeagues()
       .then((found) => {
         setLeagues(found)
-        setLeague(found[0]?.id ?? '')
+        setLeague((current) => {
+          if (found.some((option) => option.id === current)) return current
+          sessionStorage.removeItem(KEPT)
+          return ''
+        })
       })
       .catch((problem: Error) => setError(problem.message))
   }, [])
 
-  // Reload games whenever the league or the date changes.
+  // Follow the address bar, so the tabs and the back button agree.
   useEffect(() => {
-    if (!league) return
-
-    let current = true
-    setLoading(true)
-    setError(null)
-
-    getGames(league, date)
-      .then((found) => current && setGames(found))
-      .catch((problem: Error) => current && setError(problem.message))
-      .finally(() => current && setLoading(false))
-
-    return () => {
-      current = false
-    }
-  }, [league, date])
+    const follow = () => setAsked(viewFromHash())
+    window.addEventListener('hashchange', follow)
+    return () => window.removeEventListener('hashchange', follow)
+  }, [])
 
   // Repaint the page in the selected league's armband colour.
   useEffect(() => {
@@ -60,45 +70,22 @@ export default function App() {
         <h1 className="wordmark">
           Zebra<span>Zone</span>
         </h1>
-        <p className="tagline">{selected?.name}</p>
+        <p className="tagline">{selected ? selected.name : 'Officiating, league by league'}</p>
       </header>
 
-      <div className="controls">
-        <label>
-          <span className="field-label">League</span>
-          <select value={league} onChange={(event) => setLeague(event.target.value)}>
-            {leagues.map((option) => (
-              // The id doubles as the league's short code, which is all the
-              // picker has room for; the full name sits in the masthead.
-              <option key={option.id} value={option.id}>
-                {option.id.toUpperCase()}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          <span className="field-label">Date</span>
-          <input
-            type="date"
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-          />
-        </label>
-      </div>
+      {/* Nothing to navigate until a league is chosen. */}
+      {selected && (
+        <Navbar leagues={leagues} league={league} view={view} onChoose={choose} />
+      )}
 
       <main>
         {error && <p className="message error">{error}</p>}
-        {loading && <p className="message">Loading games…</p>}
-        {!loading && !error && games.length === 0 && (
-          <p className="message">No games on this date.</p>
-        )}
 
-        <div className="games">
-          {games.map((game) => (
-            <GameCard key={game.id} game={game} />
-          ))}
-        </div>
+        {view === 'home' && (
+          <Home leagues={leagues} chosen={selected} onChoose={enter} />
+        )}
+        {view === 'games' && <Games league={league} />}
+        {view === 'officials' && <p className="message">Coming next.</p>}
       </main>
 
       <footer className="colophon">

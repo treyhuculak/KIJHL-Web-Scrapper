@@ -5,6 +5,9 @@ export interface League {
   name: string
   /** The league's armband colour, used to theme the page. */
   accent: string
+  /** 'Major junior', 'Junior A' or 'Junior B' — the picker groups by it. The
+   *  backend sends the leagues in tier order, so grouping keeps that order. */
+  tier: string
 }
 
 export interface Team {

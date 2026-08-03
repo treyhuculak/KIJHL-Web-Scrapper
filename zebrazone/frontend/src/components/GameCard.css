@@ -1,0 +1,332 @@
+/* Everything inside a game card, and the grid the cards sit in. */
+
+.games {
+  display: grid;
+  /* min() keeps a card from forcing the page wider than a narrow phone. */
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+  gap: 12px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Games still to come wear the armband colour; finished ones settle to black. */
+.status {
+  background: var(--armband);
+  color: var(--paper);
+  border-radius: 3px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.status.final {
+  background: var(--ink);
+}
+
+/* Teams */
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.team-logo {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+/* Shown in the logo's place when a team has no usable image. */
+.team-code {
+  flex: none;
+  width: 44px;
+  padding: 5px 0;
+  text-align: center;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.team-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.team-city {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.team-nickname {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  /* A long nickname shouldn't push the score off the card. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-goals {
+  flex: none;
+  min-width: 38px;
+  text-align: right;
+  font-size: 28px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The loser fades back so the result reads at a glance. */
+.team.lost .team-logo {
+  opacity: 0.4;
+}
+
+.team.lost .team-code {
+  background: var(--faded);
+}
+
+.team.lost .team-nickname,
+.team.lost .team-goals {
+  color: var(--faded);
+}
+
+.attendance {
+  flex: none;
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Penalty minutes */
+
+.pims {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.pim {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 0;
+}
+
+.pim-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pim-value {
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.pim.total .pim-value {
+  color: var(--armband);
+}
+
+/* Majors and misconducts, behind a disclosure */
+
+.notable {
+  border-top: 1px solid var(--line);
+}
+
+.notable summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 0;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--armband);
+  /* Drop the browser's triangle for one that turns with the open state. */
+  list-style: none;
+}
+
+.notable summary::-webkit-details-marker {
+  display: none;
+}
+
+.notable summary::after {
+  content: '▾';
+  font-size: 13px;
+  transition: transform 0.15s;
+}
+
+.notable[open] summary::after {
+  transform: rotate(180deg);
+}
+
+.penalties {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 0 0 8px;
+  list-style: none;
+}
+
+.penalty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--wash);
+  border-radius: 6px;
+}
+
+.penalty-team {
+  flex: none;
+  width: 38px;
+  padding: 3px 0;
+  text-align: center;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.penalty-what {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.penalty-player {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.penalty-infraction {
+  font-size: 11px;
+  color: var(--muted);
+  /* Infraction names run long and shouldn't widen the card. */
+  overflow-wrap: anywhere;
+}
+
+.penalty-when {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+
+.penalty-minutes {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--armband);
+}
+
+.penalty-time {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Officials */
+
+/* One column per role, laid out like the PIM strip above it. */
+.officials {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.crew {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 0;
+  text-align: center;
+}
+
+.crew-role {
+  margin-bottom: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.crew-name {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.crew-number {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The venue gets the whole width down here, so it rarely has to wrap. */
+.card-footer {
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.venue {
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 600px) {
+  .games {
+    gap: 16px;
+  }
+
+  .card-header {
+    padding-bottom: 12px;
+  }
+
+  .team {
+    gap: 14px;
+    padding: 12px 0;
+  }
+
+  .team-goals {
+    min-width: 42px;
+    font-size: 30px;
+  }
+}

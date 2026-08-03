@@ -2,6 +2,8 @@
 
 from pydantic import BaseModel
 
+from .models import Tier
+
 
 class LeagueConfig(BaseModel):
     """A league on the HockeyTech platform."""
@@ -12,6 +14,8 @@ class LeagueConfig(BaseModel):
     api_key: str
     accent: str
     """The league's armband colour — the page is themed with it."""
+    tier: Tier
+    """The level it plays at. The league picker groups by this."""
     visible: bool = True
     """Whether to offer this league publicly. A hidden league stays out of the
     picker but can still be reached at /api/games?league=<id>, so one that
@@ -24,8 +28,11 @@ COLOURS = {
 }
 
 # Every HockeyTech league serves the same feed, so a league needs nothing but
-# its credentials and a colour. To add one, add a line here; add visible=False
-# to keep it out of the picker until it's ready.
+# its credentials, a colour and the level it plays at. To add one, add a line
+# here; add visible=False to keep it out of the picker until it's ready.
+#
+# Grouped by tier to read by, but the picker sorts by tier itself — an entry can
+# go anywhere in here.
 LEAGUES: dict[str, LeagueConfig] = {
     "whl": LeagueConfig(
         id="whl",
@@ -33,6 +40,7 @@ LEAGUES: dict[str, LeagueConfig] = {
         client_code="whl",
         api_key="f1aa699db3d81487",
         accent=COLOURS["orange"],
+        tier=Tier.MAJOR,
         visible=True,
     ),
     "ohl": LeagueConfig(
@@ -41,7 +49,8 @@ LEAGUES: dict[str, LeagueConfig] = {
         client_code="ohl",
         api_key="f1aa699db3d81487",
         accent=COLOURS["orange"],
-        visible=False,
+        tier=Tier.MAJOR,
+        visible=True,
     ),
     "qmjhl": LeagueConfig(
         id="qmjhl",
@@ -49,7 +58,8 @@ LEAGUES: dict[str, LeagueConfig] = {
         client_code="lhjmq",
         api_key="f1aa699db3d81487",
         accent=COLOURS["orange"],
-        visible=False,
+        tier=Tier.MAJOR,
+        visible=True,
     ),
     "bchc": LeagueConfig(
         id="bchc",
@@ -57,14 +67,7 @@ LEAGUES: dict[str, LeagueConfig] = {
         client_code="hockeytechtraining",
         api_key="60926b45222d54eb",
         accent=COLOURS["red"],
-        visible=True,
-    ),
-    "pjhl": LeagueConfig(
-        id="pjhl",
-        name="Pacific Junior Hockey League",
-        client_code="pjhlbc",
-        api_key="5e5fc2923094641d",
-        accent=COLOURS["red"],
+        tier=Tier.JUNIOR_A,
         visible=True,
     ),
     "bchl": LeagueConfig(
@@ -73,7 +76,17 @@ LEAGUES: dict[str, LeagueConfig] = {
         client_code="bchl",
         api_key="f3ed30007ad2124e",
         accent=COLOURS["orange"],
-        visible=False,
+        tier=Tier.JUNIOR_A,
+        visible=True,
+    ),
+    "pjhl": LeagueConfig(
+        id="pjhl",
+        name="Pacific Junior Hockey League",
+        client_code="pjhlbc",
+        api_key="5e5fc2923094641d",
+        accent=COLOURS["red"],
+        tier=Tier.JUNIOR_B,
+        visible=True,
     ),
     "wijhl": LeagueConfig(
         id="wijhl",
@@ -81,7 +94,8 @@ LEAGUES: dict[str, LeagueConfig] = {
         client_code="wijhl",
         api_key="44808f115c1b5263",
         accent=COLOURS["orange"],
-        visible=False,
+        tier=Tier.JUNIOR_B,
+        visible=True,
     ),
     "kijhl": LeagueConfig(
         id="kijhl",
@@ -89,6 +103,7 @@ LEAGUES: dict[str, LeagueConfig] = {
         client_code="kijhl",
         api_key="2589e0f644b1bb71",
         accent=COLOURS["red"],
+        tier=Tier.JUNIOR_B,
         visible=False,
     ),
 }

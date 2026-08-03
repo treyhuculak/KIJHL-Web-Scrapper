@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Game, Official, Penalty, Team } from '../api'
+import './GameCard.css'
 
 /** The team's logo, falling back to its code if the image won't load. */
 function TeamCrest({ team }: { team: Team }) {
