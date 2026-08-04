@@ -10,6 +10,90 @@
  * the full word at the top of each column.
  */
 
+/* A phone gets the season and a button; the rest folds away behind it.
+   Doubled up to outrank .filters, which loads after this and would otherwise
+   win on being later at the same weight. */
+.filters.roster-filters {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 10px;
+}
+
+.roster-filters > select,
+.more > * {
+  width: 100%;
+  min-width: 0;
+}
+
+.more-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 8px 2px;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--armband);
+  cursor: pointer;
+}
+
+.more-toggle:focus-visible {
+  outline: 2px solid var(--armband);
+  outline-offset: 2px;
+}
+
+.more {
+  display: none;
+  grid-column: 1 / -1;
+}
+
+.more.open {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+}
+
+/* The only thing said about position here — the search takes a line to itself,
+   which drops the role and the game count onto the next to halve it. The order
+   is the markup's, both here and in a row on a wide screen. */
+.more .find {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 600px) {
+  /* Room for all four side by side, so nothing needs folding away. */
+  .more-toggle {
+    display: none;
+  }
+
+  .more,
+  .more.open {
+    display: contents;
+  }
+
+  .filters.roster-filters {
+    display: flex;
+  }
+
+  .roster-filters > select,
+  .more > * {
+    width: auto;
+  }
+
+  .find {
+    width: 14em;
+  }
+
+  .count {
+    width: 7em;
+  }
+}
+
 /*
  * The table scrolls in here, both ways: sideways on a narrow screen rather than
  * wrapping names onto two lines, and downwards through the season's officials.

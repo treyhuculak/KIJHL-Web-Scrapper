@@ -69,6 +69,10 @@ export function Officials({ league }: { league: string }) {
     by: 'games',
     descending: true,
   })
+  const [search, setSearch] = useState('')
+  const [role, setRole] = useState('')
+  const [fewest, setFewest] = useState('')
+  const [showing, setShowing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -111,14 +115,26 @@ export function Officials({ league }: { league: string }) {
     }
   }, [league, season])
 
+  const shortlist = useMemo(() => {
+    const wanted = search.trim().toLowerCase()
+    const floor = Number(fewest) || 0
+
+    return officials.filter(
+      (one) =>
+        (!wanted || one.name.toLowerCase().includes(wanted)) &&
+        (!role || one.role === role || one.role === 'Both') &&
+        one.games >= floor,
+    )
+  }, [officials, search, role, fewest])
+
   // Ties break by name, so a column of equal numbers still reads alphabetically
   // and the order doesn't shuffle when the same table is sorted twice.
   const rows = useMemo(() => {
     const gap = (a: OfficialSeason, b: OfficialSeason) => a[sort.by] - b[sort.by]
-    return [...officials].sort(
+    return [...shortlist].sort(
       (a, b) => (sort.descending ? -gap(a, b) : gap(a, b)) || a.name.localeCompare(b.name),
     )
-  }, [officials, sort])
+  }, [shortlist, sort])
 
   /** Sort by a column: most first, or least first if it's already the one. */
   function reorder(by: Figure) {
@@ -130,17 +146,70 @@ export function Officials({ league }: { league: string }) {
   return (
     <>
       {seasons.length > 0 && (
-        <div className="filters">
-          <label>
-            <span>Season</span>
-            <select value={season} onChange={(event) => setPicked(event.target.value)}>
-              {seasons.map((one) => (
-                <option key={one.id} value={one.id}>
-                  {one.name}
-                </option>
-              ))}
+        <div className="filters roster-filters">
+          <select
+            aria-label="Season"
+            value={season}
+            onChange={(event) => setPicked(event.target.value)}
+          >
+            {seasons.map((one) => (
+              <option key={one.id} value={one.id}>
+                {one.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Phones only; a wider screen has the room to leave them all out. */}
+          <button
+            type="button"
+            className="more-toggle"
+            aria-expanded={showing}
+            aria-controls="officials-filters"
+            onClick={() => setShowing(!showing)}
+          >
+            Filter
+            <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+              <path
+                d="M2 4h12M4 8h8M6.5 12h3"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+
+          <div id="officials-filters" className={showing ? 'more open' : 'more'}>
+            <input
+              className="find"
+              type="search"
+              aria-label="Search name"
+              placeholder="Search name"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+
+            <select
+              className="pick"
+              aria-label="Role"
+              value={role}
+              onChange={(event) => setRole(event.target.value)}
+            >
+              <option value="">All roles</option>
+              <option value="Referee">Referees</option>
+              <option value="Linesperson">Lines</option>
             </select>
-          </label>
+
+            <input
+              className="count"
+              type="number"
+              min={0}
+              aria-label="Minimum games"
+              placeholder="Min GP"
+              value={fewest}
+              onChange={(event) => setFewest(event.target.value)}
+            />
+          </div>
         </div>
       )}
 
@@ -152,6 +221,11 @@ export function Officials({ league }: { league: string }) {
       {loading && <p className="message">Loading officials…</p>}
       {!loading && !error && season && officials.length === 0 && (
         <p className="message">No officials worked this season.</p>
+      )}
+      {officials.length > 0 && rows.length === 0 && (
+        <p className="message">
+          None of this season&rsquo;s {officials.length} officials match those filters.
+        </p>
       )}
 
       {rows.length > 0 && (
