@@ -1,6 +1,11 @@
 [tool.ruff]
 line-length = 100
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# So `from app import ...` works when pytest is run from this directory.
+pythonpath = ["."]
+
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
 # Calling Query() in an argument default is how FastAPI is meant to be written.

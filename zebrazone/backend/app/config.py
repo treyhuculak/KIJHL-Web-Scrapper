@@ -1,8 +1,38 @@
 """Which leagues the app knows about."""
 
+import os
+
 from pydantic import BaseModel
 
 from .models import Tier
+
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+"""Where the seasons of history live — Neon's pooled endpoint in production.
+
+Empty in a checkout that hasn't been pointed at one, which is a working state:
+the games page reads the feed directly, and only the pages built on history
+need this.
+"""
+
+BACKFILL_FROM = 2022
+"""How far back to ingest. The feed reaches the 1990s for some leagues, but
+officialsOnIce is sparse before 2016 and empty before that, and four seasons is
+the history worth having. Leagues newer than this simply bring what they have.
+"""
+
+RECENT_SEASON_DAYS = 460
+"""What `ingest --recent` looks at: seasons that started in the last fifteen
+months. That's the season being played, the playoffs it runs into, and next
+season from the day it appears — and none of the finished ones behind them,
+which can't change and needn't be read every night.
+"""
+
+SUMMARY_RETRY_DAYS = 14
+"""How long to keep asking for a summary that hasn't appeared. They can lag a
+game by a day or two; past a fortnight one isn't coming, and a league whose key
+can't read them at all would otherwise be re-asked for every game it has, every
+night, forever.
+"""
 
 
 class LeagueConfig(BaseModel):

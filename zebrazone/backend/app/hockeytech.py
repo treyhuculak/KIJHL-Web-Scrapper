@@ -9,27 +9,34 @@ the platform.
 """
 
 import asyncio
-import re
+from collections import defaultdict
 from datetime import date
 
 import httpx
 
 from .config import LeagueConfig
-from .models import Game, Official, Penalty, Team
+from .models import Game, GameRecord, Official, Penalty, Season, Summary, Team
 
 FEED_URL = "https://lscluster.hockeytech.com/feed/"
 TIMEOUT_SECONDS = 15
 
+# How many summaries to ask for at once when reading a season. The feed is
+# someone else's, and a backfill is hundreds of games.
+AT_ONCE = 6
+
 # The feed sorts every penalty into one of these classes. Minors are routine;
-# these are the ones worth listing out.
-NOTABLE_CLASSES = {"Major", "Misconduct"}
+# these are the ones worth listing out. The BCHL files game misconducts under a
+# class of their own where every other league calls them misconducts.
+NOTABLE_CLASSES = {"Major", "Match", "Misconduct", "Game Misconduct"}
 
-# An official is described by role and slot, e.g. 'Referee 1'. The slot says
-# nothing a reader needs, so it comes off.
-OFFICIAL_SLOT = re.compile(r"\s*\d+$")
+# The ones counted separately from a game's penalty minutes, because a night of
+# majors is not a night of minors.
+MAJOR_CLASSES = {"Major", "Match"}
 
-# The feed still says 'Linesman'. We say linesperson, everywhere.
-ROLE_NAMES = {"Linesman": "Linesperson"}
+# Fighting is written four ways across these leagues — 'Fighting', 'Major-
+# Fighting', 'Fighting - Major (5 Minutes)' — and this is the whole of what they
+# have in common.
+FIGHTING = "fighting"
 
 
 class FeedUnavailable(RuntimeError):
@@ -62,6 +69,63 @@ async def fetch_games(league: LeagueConfig, day: date) -> list[Game]:
     return [
         _read_game(entry, summary, logos) for entry, summary in zip(entries, summaries, strict=True)
     ]
+
+
+async def fetch_seasons(league: LeagueConfig) -> list[Season]:
+    """Every season the league has on the platform, newest first.
+
+    Playoffs, pre-seasons and exhibitions are all seasons in their own right
+    here, as are one-off cup and all-star games of half a dozen fixtures.
+    """
+    async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
+        payload = await _get(client, league, feed="modulekit", view="seasons")
+
+    seasons = [
+        Season(
+            id=str(row["season_id"]),
+            name=row.get("season_name", ""),
+            playoff=str(row.get("playoff")) == "1",
+            starts_on=row.get("start_date") or None,
+        )
+        for row in payload.get("SiteKit", {}).get("Seasons") or []
+    ]
+    return sorted(seasons, key=lambda season: season.starts_on or date.min, reverse=True)
+
+
+async def fetch_played_games(league: LeagueConfig, season_id: str) -> list[GameRecord]:
+    """Every game of a season that has been played, from the schedule alone.
+
+    One request for the lot. What it can't say — the penalty minutes, and who
+    worked the game — is a summary each, which is the expensive half and is left
+    for the caller to ask for.
+    """
+    async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
+        payload = await _get(
+            client, league, feed="modulekit", view="schedule", season_id=season_id, team_id="all"
+        )
+
+    return [
+        _read_scheduled(row, season_id)
+        for row in payload.get("SiteKit", {}).get("Schedule") or []
+        if str(row.get("game_status", "")).startswith("Final")
+    ]
+
+
+async def fetch_summaries(league: LeagueConfig, game_ids: list[str]) -> dict[str, Summary]:
+    """What the summaries add for a set of games, a few at a time.
+
+    A game whose summary won't load comes back as an empty Summary rather than
+    not at all: some leagues aren't cleared to read the view, and their games are
+    still games.
+    """
+    at_once = asyncio.Semaphore(AT_ONCE)
+
+    async def one(client: httpx.AsyncClient, game_id: str) -> tuple[str, Summary]:
+        async with at_once:
+            return game_id, _read_summary(await _fetch_summary(client, league, game_id))
+
+    async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
+        return dict(await asyncio.gather(*(one(client, game_id) for game_id in game_ids)))
 
 
 async def _get(client: httpx.AsyncClient, league: LeagueConfig, **params: str) -> dict:
@@ -144,18 +208,91 @@ def _read_game(entry: dict, summary: dict, logos: dict[str, str]) -> Game:
     )
 
 
+def _read_scheduled(row: dict, season_id: str) -> GameRecord:
+    """One row of a season's schedule, before its summary has been read."""
+    return GameRecord(
+        id=str(row["id"]),
+        season_id=season_id,
+        played_on=row["date_played"],
+        home_code=row.get("home_team_code", ""),
+        visitor_code=row.get("visiting_team_code", ""),
+        home_goals=_number(row.get("home_goal_count")),
+        visitor_goals=_number(row.get("visiting_goal_count")),
+        last_modified=str(row.get("last_modified") or ""),
+    )
+
+
+def _read_summary(summary: dict) -> Summary:
+    """What a game's summary adds. An empty one means it couldn't be read."""
+    if not summary:
+        return Summary()
+
+    pims = summary.get("pimTotal") or {}
+    majors, fights = _count_majors(summary.get("penalties") or [])
+    return Summary(
+        home_pims=_number(pims.get("home")),
+        visitor_pims=_number(pims.get("visitor")),
+        majors=majors,
+        fights=fights,
+        officials=_read_officials(summary),
+    )
+
+
+def _count_majors(penalties: list[dict]) -> tuple[int, int]:
+    """The game's majors and match penalties, and the fights among them.
+
+    A fight is an exchange rather than a penalty. Two players from opposite
+    sides fighting at one stoppage is one fight, four fighting majors at the
+    same stoppage is two, and a fighting major with nobody opposite it — a
+    player jumped, an aggressor — is no fight at all and counts as the major it
+    is. Pairing them off across the two sides gets all three right.
+
+    A stoppage is the period and the clock, which the feed gives in seconds.
+    """
+    majors = 0
+    fighting: dict[tuple[str, str], list[bool]] = defaultdict(list)
+
+    for penalty in penalties:
+        if penalty.get("penalty_class") not in MAJOR_CLASSES:
+            continue
+        if FIGHTING in (penalty.get("lang_penalty_description") or "").lower():
+            stoppage = (str(penalty.get("period_id")), str(penalty.get("s")))
+            fighting[stoppage].append(penalty.get("home") == "1")
+        else:
+            majors += 1
+
+    fights = 0
+    for sides in fighting.values():
+        home = sum(sides)
+        away = len(sides) - home
+        fights += min(home, away)
+        # Whoever was left without an opponent was not in a fight.
+        majors += abs(home - away)
+
+    return majors, fights
+
+
 def _read_officials(summary: dict) -> list[Official]:
-    """The on-ice crew, in the order the feed lists them."""
+    """The on-ice crew, in the order the feed lists them.
+
+    Usually four. Occasionally three, and once in a while none at all, so
+    nothing downstream may assume a crew size.
+    """
     crew = []
     for entry in summary.get("officialsOnIce") or []:
-        name = f"{entry.get('first_name', '')} {entry.get('last_name', '')}".strip()
-        if not name:
+        person_id = str(entry.get("person_id") or "").strip()
+        first = (entry.get("first_name") or "").strip()
+        last = (entry.get("last_name") or "").strip()
+        # Without an id there is nothing to count them under, and a nameless
+        # official is nobody. Either way the row would be noise.
+        if not person_id or not (first or last):
             continue
-        role = OFFICIAL_SLOT.sub("", entry.get("description") or "").strip()
         crew.append(
             Official(
-                name=name,
-                role=ROLE_NAMES.get(role, role) or "Official",
+                person_id=person_id,
+                first_name=first,
+                last_name=last,
+                slot=_number(entry.get("official_type_id")) or 0,
                 # Leagues that don't number their officials send a zero.
                 number=_number(entry.get("jersey_number")) or None,
             )

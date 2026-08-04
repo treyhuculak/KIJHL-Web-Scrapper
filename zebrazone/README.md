@@ -28,8 +28,8 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8100
 ```
 
-Linting is `ruff check app` and `ruff format app` (`pip install -r
-requirements-dev.txt`); the frontend's is `npm run lint`.
+Linting is `ruff check app` and `ruff format app`, tests are `pytest` (both
+`pip install -r requirements-dev.txt`); the frontend's linting is `npm run lint`.
 
 ```bash
 # frontend -> http://localhost:5173
@@ -40,6 +40,44 @@ npm run dev
 
 Open http://localhost:5173. Vite proxies `/api` to the backend, so the frontend
 uses relative URLs and needs no CORS setup.
+
+## The database
+
+Only the pages built on history need one — the games page reads the feed
+directly, and without `DATABASE_URL` the app runs fine and says so plainly if
+you ask it for a statistic.
+
+```bash
+docker compose up -d --wait     # Postgres, with the schema already applied
+export DATABASE_URL=postgresql://zebrazone:zebrazone@localhost:5432/zebrazone
+```
+
+`docker compose down` stops it and keeps the data; `down -v` throws the data
+away. Any Postgres will do if you'd rather not use Docker — the schema is
+`backend/app/schema.sql` and `ingest` applies it itself.
+
+Then fill it from the feed:
+
+```bash
+cd backend
+python -m app.ingest --league kijhl --season 65   # one season, a minute or so
+python -m app.ingest --recent                     # the seasons in play
+python -m app.ingest                              # everything since 2022
+```
+
+The last is some sixteen thousand games and around twenty minutes, which is why
+this is a command and not an endpoint: nothing a page view can set off.
+
+`--recent` is the one to schedule. It reads the seasons that started in the last
+fifteen months — the season being played, the playoffs it runs into, and next
+season from the day the feed lists it — and skips every game whose change stamp
+hasn't moved since we last read it. With nothing new that's about forty requests
+and half a minute; a night with games costs one summary each on top.
+
+A summary that won't load is asked for again for a fortnight, because they do
+sometimes lag a game by a day or two. After that it's left alone: a league whose
+key can't read the view at all would otherwise be re-asked for every game it
+has, every night, forever.
 
 ## Layout
 

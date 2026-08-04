@@ -1,0 +1,42 @@
+# A Postgres to develop against.
+#
+# Only the database is in here. The app itself still runs on the host with
+# `npm run locally`, so there's one way to run it rather than two, and this is
+# just the piece that's tedious to install.
+#
+#   docker compose up -d        start it, schema and all
+#   docker compose down         stop it, keep the data
+#   docker compose down -v      stop it, throw the data away and start clean
+#
+# Then, in the shell you run the backend from:
+#
+#   export DATABASE_URL=postgresql://zebrazone:zebrazone@localhost:5432/zebrazone
+
+services:
+  db:
+    image: postgres:18
+    # Local only, and never what production uses — that's a Neon URL held as a
+    # secret. Anything reachable from outside this machine needs a real one.
+    environment:
+      POSTGRES_USER: zebrazone
+      POSTGRES_PASSWORD: zebrazone
+      POSTGRES_DB: zebrazone
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+      # Postgres runs everything in here the first time it builds its data
+      # directory, so a fresh database comes up with the tables already in it.
+      # `ingest` applies the same file itself, so nothing depends on this — it
+      # just saves a step.
+      - ./backend/app/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      # `up --wait` and anything depending on this waits for a real connection
+      # rather than for the container to merely exist.
+      test: ["CMD-SHELL", "pg_isready -U zebrazone -d zebrazone"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
