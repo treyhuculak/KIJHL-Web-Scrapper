@@ -4,6 +4,7 @@ import { viewFromHash } from './nav'
 import { Navbar } from './components/Navbar'
 import { Games } from './pages/Games'
 import { Home } from './pages/Home'
+import { Officials } from './pages/Officials'
 import './App.css'
 
 /**
@@ -64,8 +65,10 @@ export default function App() {
     }
   }, [selected])
 
+  const shell = view === 'officials' ? 'page fixed' : 'page'
+
   return (
-    <div className="page">
+    <div className={shell}>
       <header className="masthead">
         <h1 className="wordmark">
           Zebra<span>Zone</span>
@@ -85,7 +88,7 @@ export default function App() {
           <Home leagues={leagues} chosen={selected} onChoose={enter} />
         )}
         {view === 'games' && <Games league={league} />}
-        {view === 'officials' && <p className="message">Coming next.</p>}
+        {view === 'officials' && <Officials league={league} />}
       </main>
 
       <footer className="colophon">

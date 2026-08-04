@@ -1,5 +1,7 @@
 """The data the app works with."""
 
+from collections import Counter
+from collections.abc import Iterable
 from datetime import date
 from enum import StrEnum
 
@@ -10,6 +12,40 @@ from pydantic import BaseModel, Field, computed_field
 # rather than parsed out of the feed's 'Referee 1' prose and stored twice. An
 # unfamiliar slot is shown as a plain official rather than guessed at.
 ROLE_BY_SLOT = {1: "Referee", 2: "Referee", 3: "Linesperson", 4: "Linesperson"}
+
+
+# How much of the other job it takes before someone counts as doing both.
+#
+# A fifth of their nights. Filling in once is not a second job, and calling it
+# one would put a quarter of the KIJHL's roster under 'Both' on the strength of
+# a single game. The line goes here because that's where the data stops arguing:
+# of the 36 KIJHL officials who worked each job at least once last season, 16
+# spent under a tenth of their nights on the lesser one and nobody sits between
+# a tenth and an eighth, so anywhere from 10% to 20% separates the same two
+# groups. A share rather than a count, so a short playoff run is judged the same
+# way a full season is.
+BOTH_JOBS_SHARE = 0.2
+
+
+def role_for(slots: Iterable[int]) -> str:
+    """What to call an official who worked these slots across a season.
+
+    Most work the one job all year, and in major junior every one of them does.
+    Below that they swap: a linesperson takes a referee's night when someone is
+    short, and some work both jobs all season by arrangement. Only the second of
+    those is 'Both' — see BOTH_JOBS_SHARE. Slots that aren't a job we recognise
+    are left out of the reckoning rather than allowed to sway it.
+    """
+    worked = Counter(ROLE_BY_SLOT.get(slot, "Official") for slot in slots)
+    referee, linesperson = worked["Referee"], worked["Linesperson"]
+
+    lesser = min(referee, linesperson)
+    if lesser and lesser >= BOTH_JOBS_SHARE * (referee + linesperson):
+        return "Both"
+    if referee != linesperson:
+        return "Referee" if referee > linesperson else "Linesperson"
+    # Both nil: nothing here is a job we know the name of.
+    return "Official"
 
 
 class Tier(StrEnum):
@@ -151,7 +187,7 @@ class OfficialSeason(BaseModel):
     name: str
     number: int | None
     role: str
-    """The one they worked most often that season; they do swap."""
+    """'Referee', 'Linesperson', or 'Both' — see role_for."""
     games: int
     pims: int
     pims_per_game: float

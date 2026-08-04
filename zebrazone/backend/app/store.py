@@ -17,7 +17,7 @@ from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
 
 from .config import DATABASE_URL, SUMMARY_RETRY_DAYS
-from .models import ROLE_BY_SLOT, GameRecord, OfficialSeason, Season
+from .models import GameRecord, OfficialSeason, Season, role_for
 
 SCHEMA = Path(__file__).with_name("schema.sql")
 
@@ -246,17 +246,25 @@ async def stored_games(league_id: str, season_id: str) -> dict[str, str]:
 
 
 async def seasons(league_id: str) -> list[Season]:
-    """The seasons we hold games for, newest first."""
+    """The seasons we hold games for, the one being played first.
+
+    Ordered by their most recent game rather than by when they started, which
+    is what makes the first row the season in play: a league's playoffs start
+    later than its regular season but only overtake it once they're under way,
+    and the join to the games is also what keeps a season nobody has played yet
+    out of the list.
+    """
     async with _ready().connection() as connection:
         rows = await connection.execute(
             """
             SELECT s.season_id, s.name, s.playoff, s.starts_on
               FROM season s
+              JOIN (SELECT league_id, season_id, max(played_on) AS latest
+                      FROM game
+                     GROUP BY league_id, season_id) g
+             USING (league_id, season_id)
              WHERE s.league_id = %s
-               AND EXISTS (SELECT 1 FROM game g
-                            WHERE g.league_id = s.league_id
-                              AND g.season_id = s.season_id)
-             ORDER BY s.starts_on DESC NULLS LAST
+             ORDER BY g.latest DESC
             """,
             (league_id,),
         )
@@ -284,9 +292,11 @@ async def officials_in_season(league_id: str, season_id: str) -> list[OfficialSe
                    o.first_name,
                    o.last_name,
                    o.number,
-                   -- Officials swap roles between nights, so this is whichever
-                   -- one they worked most that season.
-                   mode() WITHIN GROUP (ORDER BY go.slot) AS slot,
+                   -- One slot per game worked, which role_for weighs up into
+                   -- the job or jobs they did. Kept as a list rather than
+                   -- tallied here so that what a slot means stays in one place,
+                   -- beside ROLE_BY_SLOT, instead of being half in SQL.
+                   array_agg(go.slot)                   AS slots,
                    count(*)                             AS games,
                    sum(g.home_pims + g.visitor_pims)    AS pims,
                    sum(g.majors)                        AS majors,
@@ -307,7 +317,7 @@ async def officials_in_season(league_id: str, season_id: str) -> list[OfficialSe
                 person_id=row["person_id"],
                 name=f"{row['first_name']} {row['last_name']}".strip(),
                 number=row["number"],
-                role=ROLE_BY_SLOT.get(row["slot"], "Official"),
+                role=role_for(row["slots"]),
                 games=row["games"],
                 pims=row["pims"] or 0,
                 pims_per_game=round((row["pims"] or 0) / row["games"], 1),

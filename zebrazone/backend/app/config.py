@@ -1,10 +1,34 @@
 """Which leagues the app knows about."""
 
 import os
+from pathlib import Path
 
 from pydantic import BaseModel
 
 from .models import Tier
+
+ENV_FILE = Path(__file__).parent.parent / ".env"
+
+
+def _read_env_file() -> None:
+    """Fill in what the environment hasn't already said.
+
+    Keeps a checkout's DATABASE_URL beside the code instead of in whichever
+    shell started the server. A real environment variable always wins, so
+    production, where there is no file, is unaffected.
+    """
+    if not ENV_FILE.exists():
+        return
+
+    for line in ENV_FILE.read_text(encoding="utf-8").splitlines():
+        setting = line.strip()
+        if not setting or setting.startswith("#") or "=" not in setting:
+            continue
+        name, value = setting.split("=", 1)
+        os.environ.setdefault(name.strip(), value.strip().strip("\"'"))
+
+
+_read_env_file()
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 """Where the seasons of history live — Neon's pooled endpoint in production.
@@ -134,6 +158,6 @@ LEAGUES: dict[str, LeagueConfig] = {
         api_key="2589e0f644b1bb71",
         accent=COLOURS["red"],
         tier=Tier.JUNIOR_B,
-        visible=False,
+        visible=True,
     ),
 }

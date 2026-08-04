@@ -1,0 +1,242 @@
+/*
+ * The officials table: one row per official, one season at a time.
+ *
+ * A real table at every width — a phone gets the same six columns, in short
+ * form, so every column can still be sorted from one. That's what the figures
+ * are for; a layout that hides half of them on a phone hides half the page.
+ *
+ * Mobile first as everywhere else: the base rules are the narrow ones, and the
+ * media query at the bottom spends the extra room on padding, type size and
+ * the full word at the top of each column.
+ */
+
+/*
+ * The table scrolls in here, both ways: sideways on a narrow screen rather than
+ * wrapping names onto two lines, and downwards through the season's officials.
+ *
+ * Both, and not just sideways, because a box that scrolls is what
+ * `position: sticky` measures itself against — headings inside one hold onto
+ * that box, never the window. So the box has to be the thing being scrolled
+ * down, and it has to be on screen the whole time, which is what .page.fixed
+ * in App.css arranges. The reward is column headings that stay put at every
+ * width, on a table too wide to label any other way.
+ */
+.roster-scroll {
+  /* Fills what the shell leaves; min-height so it may be shorter than its
+     contents, which is the whole point of it. */
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  /* Reaching the end of the table shouldn't hand the scroll to the window
+     behind it, or set off a phone's pull-to-refresh. */
+  overscroll-behavior: contain;
+  background: var(--paper);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+}
+
+.roster {
+  width: 100%;
+  /* Separate, not collapsed: a collapsed table's borders belong to the table
+     rather than the cells, so the rule under a stuck heading would be left
+     behind the moment the heading came unstuck. Nothing here sets a border on
+     two touching sides, so there's none to double up and no spacing to take
+     back. */
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Headings */
+
+.roster thead th {
+  /* The top of the box the table scrolls in, so they're never off screen. */
+  position: sticky;
+  top: 0;
+  /* Above the rows sliding under them. */
+  z-index: 1;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 5px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Square corners over the sheet's rounded ones, the headings being the top
+   of it from the first row scrolled. */
+.roster thead th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.roster thead th:last-child {
+  border-top-right-radius: 8px;
+}
+
+/* Every heading is a button, dressed as the heading it sits in. */
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.sort:focus-visible {
+  outline: 2px solid var(--armband);
+  outline-offset: 3px;
+}
+
+/* The column being sorted by, and which way. */
+.arrow {
+  color: var(--armband);
+}
+
+@media (hover: hover) {
+  .sort:hover {
+    color: var(--ink);
+  }
+}
+
+/* The word for a column, and the short form of it. A phone has room for five
+   numbers or five words, not both, and the numbers are the point. */
+.long {
+  display: none;
+}
+
+/* Rows */
+
+.roster tbody th,
+.roster tbody td {
+  padding: 9px 5px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* The last rule would sit along the bottom edge of the sheet. */
+.roster tbody tr:last-child th,
+.roster tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Lit a cell at a time rather than a row, so a row can't paint over the
+   rounded corners of the sheet it's the last one on. */
+@media (hover: hover) {
+  .roster tbody tr:hover th,
+  .roster tbody tr:hover td {
+    background: var(--wash);
+  }
+}
+
+/* The name column takes whatever the figures don't need. */
+.who {
+  width: 100%;
+  padding-left: 10px;
+  text-align: left;
+  font-weight: 400;
+}
+
+/* Name to the left, job to the right. The name column is the one that takes up
+   the slack, so pushing the pills to its far edge is what puts them all on the
+   same line down the page instead of wherever each name happens to end. */
+.who-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.who-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  /* Names stay on one line; the table scrolls sideways instead. */
+  white-space: nowrap;
+}
+
+.who-number {
+  font-weight: 600;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.figure {
+  text-align: right;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* The job they worked. A referee wears the armband, the lines wear black —
+   which is what those two colours already mean everywhere else on the page.
+   Anyone who worked both jobs enough to count wears both pills. */
+.roles {
+  flex: none;
+  display: flex;
+  gap: 3px;
+}
+
+.pill {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pill.referee {
+  background: var(--armband);
+}
+
+@media (min-width: 600px) {
+  .roster thead th {
+    padding: 12px 10px;
+    letter-spacing: 1px;
+  }
+
+  .roster tbody th,
+  .roster tbody td {
+    padding: 12px 10px;
+  }
+
+  .who {
+    padding-left: 14px;
+  }
+
+  .who-line {
+    gap: 20px;
+  }
+
+  .who-name {
+    font-size: 14px;
+  }
+
+  .figure {
+    font-size: 14px;
+  }
+
+  /* Room for the whole word now. */
+  .long {
+    display: inline;
+  }
+
+  .short {
+    display: none;
+  }
+
+  .pill {
+    font-size: 10px;
+    padding: 3px 9px;
+    letter-spacing: 1px;
+  }
+}

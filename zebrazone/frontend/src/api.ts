@@ -54,6 +54,30 @@ export interface Game {
   officials: Official[]
 }
 
+/** A season a league has played. Playoffs arrive as one of these too. */
+export interface Season {
+  id: string
+  name: string
+  playoff: boolean
+  starts_on: string | null
+}
+
+/** One official's season, counted up out of the games they worked. */
+export interface OfficialSeason {
+  person_id: string
+  name: string
+  number: number | null
+  /** 'Referee', 'Linesperson', or 'Both' — the last only for officials who
+   *  spent a real part of the season on each, not for one night filling in. */
+  role: string
+  games: number
+  pims: number
+  pims_per_game: number
+  /** Majors and match penalties called in their games, fighting aside. */
+  majors: number
+  fights: number
+}
+
 async function get<T>(path: string): Promise<T> {
   const response = await fetch(path)
   if (!response.ok) {
@@ -69,4 +93,13 @@ export function getLeagues(): Promise<League[]> {
 
 export function getGames(league: string, date: string): Promise<Game[]> {
   return get<Game[]>(`/api/games?league=${league}&date=${date}`)
+}
+
+/** The seasons we hold games for, the one being played first. */
+export function getSeasons(league: string): Promise<Season[]> {
+  return get<Season[]>(`/api/seasons?league=${league}`)
+}
+
+export function getOfficials(league: string, season: string): Promise<OfficialSeason[]> {
+  return get<OfficialSeason[]>(`/api/officials?league=${league}&season=${season}`)
 }

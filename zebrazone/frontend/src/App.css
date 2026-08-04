@@ -15,6 +15,32 @@
   min-height: 100svh;
 }
 
+/*
+ * A page whose content scrolls itself, rather than taking the window with it.
+ * The shell fills the screen exactly and stays put; whatever is inside `main`
+ * is left to do the scrolling.
+ *
+ * The officials page needs this and the other pages don't. Its table is wider
+ * than a phone, so it scrolls sideways in a box of its own — and a box that
+ * scrolls is what `position: sticky` measures itself against, so the column
+ * headings can only stay in view if that same box is what's scrolling
+ * vertically too. Which it can only do if it's always on screen. Hence this.
+ */
+.page.fixed {
+  height: 100svh;
+  overflow: hidden;
+}
+
+.page.fixed main {
+  display: flex;
+  flex-direction: column;
+  /* Or the content's own height wins and it overflows the shell instead. */
+  min-height: 0;
+  /* The window isn't scrolling here, so the room usually left at the bottom
+     for that is room the table can have. */
+  padding-bottom: 22px;
+}
+
 /* Referee stripes along one edge — the page's top and bottom trim. */
 .masthead,
 .colophon {

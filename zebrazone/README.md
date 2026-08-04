@@ -49,8 +49,14 @@ you ask it for a statistic.
 
 ```bash
 docker compose up -d --wait     # Postgres, with the schema already applied
-export DATABASE_URL=postgresql://zebrazone:zebrazone@localhost:5432/zebrazone
 ```
+
+The connection string lives in `backend/.env`, which is git-ignored and read at
+startup — so it doesn't matter which shell you run things from, and forgetting
+to export it can't quietly turn into a page saying there's no history. A real
+`DATABASE_URL` in the environment always wins over the file, which is how
+production gets its Neon one. Anything that builds an image from `backend/`
+must exclude `.env`.
 
 `docker compose down` stops it and keeps the data; `down -v` throws the data
 away. Any Postgres will do if you'd rather not use Docker — the schema is
@@ -84,23 +90,28 @@ has, every night, forever.
 ```
 backend/app/
   config.py       the leagues we support
-  models.py       Model  — League, Team, Penalty, Game
+  models.py       Model  — League, Team, Penalty, Game, and the stored ones
   hockeytech.py   Model  — the only code that knows the upstream API
-  routes.py       Controller — GET /api/leagues, GET /api/games
+  store.py        Model  — the only code that knows SQL
+  schema.sql      the four tables
+  ingest.py       the command that fills them from the feed
+  routes.py       Controller — the four GETs below
   main.py         wiring
 
 frontend/src/
-  api.ts          Model — types + the two calls to the backend
+  api.ts          Model — types + the calls to the backend
   nav.ts          the pages a league has, and which one the URL is asking for
   App.tsx         Controller — the chosen league, and which page is showing
-  pages/          one per page: Home picks a league, Games lists a day's games
+  pages/          one per page: Home picks a league, Games a day, Officials a season
   components/     View — presentation only
   assets/leagues/ league logos, each named after its league's id
 ```
 
 The rule that keeps this honest: `hockeytech.py` is the single place that knows
-the feed's field names. Everything above it works with `Game` and `Team`. If the
-upstream API changes, one file changes.
+the feed's field names, and `store.py` the single place that knows SQL.
+Everything above the two of them works with `Game`, `Season` and
+`OfficialSeason`. If the upstream API changes one file changes; if the database
+does, one other file changes.
 
 Three of the feed's views go into a day's games, and `hockeytech.py` requests
 them all concurrently:
@@ -183,8 +194,10 @@ armband on hover; the league picker's cards set both inline to the league's own
 colour, so they keep it throughout.
 
 Built mobile first. Each stylesheet reads as a phone stylesheet with one
-`min-width: 600px` block adding room on bigger screens, and nothing is allowed
-to scroll sideways at any width.
+`min-width: 600px` block adding room on bigger screens, and the page is never
+allowed to scroll sideways at any width. The officials table is the one thing
+wider than a phone, and it scrolls within itself rather than taking the page
+with it.
 
 The feed carries no team colours, only logos, so a team is identified by its
 crest with its three-letter code as the fallback.
@@ -195,6 +208,12 @@ crest with its three-letter code as the fallback.
 |---|---|
 | `GET /api/leagues` | `[{ id, name, accent, tier }]`, major junior first |
 | `GET /api/games?league=whl&date=2026-01-10` | `[{ id, date, status, final, venue, start_time, attendance, home, visitor, notable_penalties, officials }]` |
+| `GET /api/seasons?league=whl` | `[{ id, name, playoff, starts_on }]`, the one being played first |
+| `GET /api/officials?league=whl&season=293` | `[{ person_id, name, number, role, games, pims, pims_per_game, majors, fights }]`, busiest first |
+
+The first two read the feed; the last two read the database, and answer `503`
+rather than an error when there isn't one — nothing is wrong with the request
+and the answer may exist tomorrow.
 
 `home` and `visitor` are `{ code, city, nickname, goals, pims, logo }`.
 
@@ -207,5 +226,26 @@ in `pims` but not listed.
 renames the role to linesperson, so nothing downstream sees the feed's wording.
 `number` is null in leagues that don't number their officials — the KIJHL sends
 a zero for all four.
+
+## The officials page
+
+One season at a time, and one league at a time. The season picker holds the
+seasons we actually have games for, freshest first, and opens on the one being
+played — which is the season of the most recent game, so it moves to the
+playoffs of its own accord when they start and to next season when that does.
+Playoffs are a season of their own here, as they are upstream, so no figure on
+the page is ever an average across two competitions.
+
+Every column of figures sorts, at any width. A phone gets the same six columns
+in short form and scrolls the table sideways inside itself rather than wrapping
+names; the headings stick under the navbar on wider screens, where the table
+always fits and so nothing is scrolling for them to stick to instead.
+
+`role` is the job they did over the whole season rather than on one night, and
+it's `Referee`, `Linesperson` or `Both`. Officials swap: never in major junior,
+but a third of the KIJHL's roster works each job at some point. `Both` needs a
+fifth of their nights on each — see `BOTH_JOBS_SHARE` in `models.py` — because
+covering one game when someone is short isn't a second job, and counting it as
+one put a quarter of that roster under `Both` on the strength of a single night.
 
 Interactive docs while the backend runs: http://127.0.0.1:8100/docs
