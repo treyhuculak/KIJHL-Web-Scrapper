@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getOfficials, type OfficialSeason } from '../api'
-import { Roles } from '../components/Roles'
+import { Role } from '../components/Role'
 import { useSeasons } from '../seasons'
 import './Officials.css'
 
@@ -75,6 +75,8 @@ export function Officials({ league }: { league: string }) {
     return officials.filter(
       (one) =>
         (!wanted || one.name.toLowerCase().includes(wanted)) &&
+        // A 50/50 official does both jobs, so they belong under either one.
+        // Asking for 50/50 itself leaves only them, both clauses saying so.
         (!role || one.role === role || one.role === 'Both') &&
         one.games >= floor,
     )
@@ -155,6 +157,7 @@ export function Officials({ league }: { league: string }) {
               <option value="">All roles</option>
               <option value="Referee">Referees</option>
               <option value="Linesperson">Lines</option>
+              <option value="Both">50/50</option>
             </select>
 
             <input
@@ -238,7 +241,7 @@ export function Officials({ league }: { league: string }) {
                           <span className="who-number"> #{official.number}</span>
                         )}
                       </span>
-                      <Roles role={official.role} />
+                      <Role role={official.role} />
                     </div>
                   </th>
                   {FIGURES.map((figure) => (

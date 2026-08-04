@@ -7,7 +7,7 @@ import {
   type Partnership,
   type SeasonStats,
 } from '../api'
-import { Roles } from '../components/Roles'
+import { Role } from '../components/Role'
 import { useSeasons } from '../seasons'
 import './Stats.css'
 
@@ -71,7 +71,7 @@ function People({ rows, unit }: { rows: Leader[]; unit: string }) {
         <li key={one.person_id}>
           <span className="rank-who">
             <span className="rank-name">{one.name}</span>
-            <Roles role={one.role} />
+            <Role role={one.role} />
           </span>
           <Figure total={one.total} unit={unit} rate={`${one.per_game.toFixed(2)} a game`} />
         </li>

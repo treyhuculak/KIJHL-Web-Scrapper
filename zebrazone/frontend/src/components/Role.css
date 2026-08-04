@@ -1,0 +1,35 @@
+/* The pill that says what job an official does. Referee in the armband colour,
+   lines in black, and grey for the officials who are half of each. */
+
+.pill {
+  /* Never squeezed by whatever it's sitting beside. */
+  flex: none;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pill.referee {
+  background: var(--armband);
+}
+
+/* Neither of the two, which is the point — the palette's own grey rather than a
+   blend of them, since the armband changes with the league and a mix of it with
+   black comes out as a darker version of the armband instead of a third thing. */
+.pill.split {
+  background: var(--muted);
+}
+
+@media (min-width: 600px) {
+  .pill {
+    font-size: 10px;
+    padding: 3px 9px;
+    letter-spacing: 1px;
+  }
+}

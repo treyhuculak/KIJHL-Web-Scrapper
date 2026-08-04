@@ -257,6 +257,13 @@ fifth of their nights on each — see `BOTH_JOBS_SHARE` in `models.py` — becau
 covering one game when someone is short isn't a second job, and counting it as
 one put a quarter of that roster under `Both` on the strength of a single night.
 
+On screen it's one pill either way: the armband colour for a referee, black for
+the lines, and grey saying 50/50 for `Both`, since someone who is half of each
+is neither. Those are the API's words translated for the reader, the way
+`Linesperson` has always been shown as `Lines`. The role filter offers the same
+three: either job includes the 50/50 officials, and asking for 50/50 leaves
+only them.
+
 ## The stats page
 
 The same season, asked a different question. Where the officials page is every
