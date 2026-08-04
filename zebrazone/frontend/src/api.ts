@@ -32,6 +32,8 @@ export interface Penalty {
 
 /** One of the four officials who worked the game. */
 export interface Official {
+  /** The feed's own id for them, scoped to the league. */
+  person_id: string
   name: string
   /** 'Referee' or 'Linesperson'. */
   role: string
@@ -78,6 +80,54 @@ export interface OfficialSeason {
   fights: number
 }
 
+/**
+ * A season's standouts.
+ *
+ * Every figure counts what happened in the games an official worked, not what
+ * they called: the feed names the crew and the penalties, never which of the
+ * four blew the whistle.
+ */
+
+/** One official on one leaderboard. */
+export interface Leader {
+  person_id: string
+  name: string
+  role: string
+  games: number
+  /** However many of the thing this board counts. */
+  total: number
+  per_game: number
+}
+
+/** Two officials who work the same job, and how often they're put together. */
+export interface Partnership {
+  names: string[]
+  games: number
+  pims_per_game: number
+}
+
+/** A game, and the crew who had it. */
+export interface CrewedGame {
+  game_id: string
+  played_on: string
+  home_code: string
+  visitor_code: string
+  home_goals: number | null
+  visitor_goals: number | null
+  pims: number
+  majors: number
+  fights: number
+  crew: Official[]
+}
+
+export interface SeasonStats {
+  fights: Leader[]
+  majors: Leader[]
+  wildest: CrewedGame[]
+  referee_pairs: Partnership[]
+  line_pairs: Partnership[]
+}
+
 async function get<T>(path: string): Promise<T> {
   const response = await fetch(path)
   if (!response.ok) {
@@ -102,4 +152,8 @@ export function getSeasons(league: string): Promise<Season[]> {
 
 export function getOfficials(league: string, season: string): Promise<OfficialSeason[]> {
   return get<OfficialSeason[]>(`/api/officials?league=${league}&season=${season}`)
+}
+
+export function getStats(league: string, season: string): Promise<SeasonStats> {
+  return get<SeasonStats>(`/api/stats?league=${league}&season=${season}`)
 }

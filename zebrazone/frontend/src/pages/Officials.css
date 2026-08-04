@@ -257,31 +257,6 @@
   white-space: nowrap;
 }
 
-/* The job they worked. A referee wears the armband, the lines wear black —
-   which is what those two colours already mean everywhere else on the page.
-   Anyone who worked both jobs enough to count wears both pills. */
-.roles {
-  flex: none;
-  display: flex;
-  gap: 3px;
-}
-
-.pill {
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--paper);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.pill.referee {
-  background: var(--armband);
-}
-
 @media (min-width: 600px) {
   .roster thead th {
     padding: 12px 10px;
@@ -316,11 +291,5 @@
 
   .short {
     display: none;
-  }
-
-  .pill {
-    font-size: 10px;
-    padding: 3px 9px;
-    letter-spacing: 1px;
   }
 }

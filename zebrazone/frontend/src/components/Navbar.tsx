@@ -5,7 +5,9 @@ import './Navbar.css'
 /**
  * The bar under the masthead: which page you're on, and which league it's about.
  *
- * It sticks to the top, so both stay in reach however far down a page goes.
+ * It sticks to the top, so both stay in reach however far down a page goes. The
+ * way back to the picker is the wordmark above rather than a tab in here —
+ * there isn't room on a phone for both a tab per page and the league select.
  */
 export function Navbar({
   leagues,
@@ -21,9 +23,6 @@ export function Navbar({
   return (
     <div className="navbar">
       <nav className="tabs">
-        <a className={view === 'home' ? 'tab current' : 'tab'} href="#home">
-          Home
-        </a>
         {PAGES.map((page) => (
           <a
             key={page.id}

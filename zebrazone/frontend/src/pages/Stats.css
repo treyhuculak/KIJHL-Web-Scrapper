@@ -1,0 +1,252 @@
+/*
+ * The stats page: five short boards rather than one long table.
+ *
+ * The officials page answers 'what did everyone do'; this one answers 'who
+ * stood out', which wants a handful of rows and room to say what each figure
+ * means. Every board is the same two-part row — who, then the number that
+ * ranks them with its rate underneath — so five different questions still read
+ * as one page.
+ *
+ * Mobile first: one board per line, and the media query at the bottom pairs
+ * them up once there's room.
+ */
+
+.boards {
+  display: grid;
+  gap: 14px;
+}
+
+/* Like a card, but nothing here is clickable, so the armband edge is free to
+   be the page's colour rather than a promise of what hovering will do. */
+.board {
+  background: var(--paper);
+  border-left: 8px solid var(--armband);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 14px 14px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+}
+
+.board h2 {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.board-note {
+  margin: 3px 0 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* The ranked lists — people, and pairs of them */
+
+.rank,
+.wild {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rank {
+  counter-reset: rank;
+}
+
+.rank li,
+.wild li {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.rank li:last-child,
+.wild li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.rank li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.rank li::before {
+  counter-increment: rank;
+  content: counter(rank);
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--armband);
+}
+
+.rank-who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rank-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+/* The figure that ranks the row, and the rate that keeps it honest — someone
+   with the most of something has usually also worked the most nights. */
+.rank-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.rank-total {
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.rank-unit {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.rank-rate {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+/* The wildest games */
+
+.wild-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.wild-when {
+  flex: none;
+  min-width: 3.6em;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.wild-score {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.wild-pims {
+  margin-left: auto;
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--armband);
+}
+
+.wild-tally {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.wild-crew p {
+  margin-top: 2px;
+  font-size: 12px;
+}
+
+/* Ref in the armband, lines in grey, and both to the same width so the two
+   lines of a crew start in the same place. The margin is on top of that width
+   rather than inside it, so the longer of the two labels keeps the gap too. */
+.crew-job {
+  display: inline-block;
+  min-width: 4.2em;
+  margin-right: 9px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.crew-job.referee {
+  color: var(--armband);
+}
+
+.footnote {
+  margin-top: 16px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--faded);
+}
+
+@media (min-width: 600px) {
+  .boards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  /* The games take the full width and sit between the two pairs of boards, so
+     the page reads people, games, partnerships down the middle. */
+  .board.wide {
+    grid-column: 1 / -1;
+  }
+
+  .board h2 {
+    font-size: 13px;
+  }
+
+  .board-note {
+    font-size: 12px;
+  }
+
+  .rank li,
+  .wild li {
+    padding: 11px 0;
+  }
+
+  .rank-name,
+  .wild-score {
+    font-size: 14px;
+  }
+
+  .rank-total,
+  .wild-pims {
+    font-size: 16px;
+  }
+
+  /* Room for the crew beside the game rather than under it. */
+  .wild li {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+  }
+
+  .wild-line {
+    grid-area: 1 / 1;
+  }
+
+  .wild-tally {
+    grid-area: 2 / 1;
+  }
+
+  .wild-crew {
+    grid-area: 1 / 2 / 3 / 3;
+  }
+
+  .wild-crew p:first-child {
+    margin-top: 0;
+  }
+}

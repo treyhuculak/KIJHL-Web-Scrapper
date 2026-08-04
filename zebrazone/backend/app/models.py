@@ -1,7 +1,7 @@
 """The data the app works with."""
 
 from collections import Counter
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from datetime import date
 from enum import StrEnum
 
@@ -25,6 +25,11 @@ ROLE_BY_SLOT = {1: "Referee", 2: "Referee", 3: "Linesperson", 4: "Linesperson"}
 # groups. A share rather than a count, so a short playoff run is judged the same
 # way a full season is.
 BOTH_JOBS_SHARE = 0.2
+
+
+def slots_for(role: str) -> list[int]:
+    """The slots that mean a job, so nothing else has to spell out '1 and 2'."""
+    return [slot for slot, job in ROLE_BY_SLOT.items() if job == role]
 
 
 def role_for(slots: Iterable[int]) -> str:
@@ -194,3 +199,89 @@ class OfficialSeason(BaseModel):
     majors: int
     """Majors and match penalties called in their games, fighting aside."""
     fights: int
+
+
+# A season's standouts.
+#
+# Every figure below is a figure about the games someone worked, not about what
+# they personally did in them: the feed says who was on the ice and what
+# happened, never which of the four called it. So these are the officials who
+# saw the most of something, which is the honest version of the same question
+# and is what the page says.
+
+
+class Leader(BaseModel):
+    """One official on one leaderboard."""
+
+    person_id: str
+    name: str
+    role: str
+    games: int
+    total: int
+    """However many of the thing this board counts."""
+    per_game: float
+
+
+class Partnership(BaseModel):
+    """Two officials who worked the same job on the same night, and how often."""
+
+    names: list[str]
+    games: int
+    """Nights the two of them worked together."""
+    pims_per_game: float
+
+
+class CrewedGame(BaseModel):
+    """A game, and the four who had it."""
+
+    game_id: str
+    played_on: date
+    home_code: str
+    visitor_code: str
+    home_goals: int | None
+    visitor_goals: int | None
+    pims: int
+    majors: int
+    fights: int
+    crew: list[Official]
+
+
+class SeasonStats(BaseModel):
+    """What stood out about a season."""
+
+    fights: list[Leader]
+    majors: list[Leader]
+    wildest: list[CrewedGame]
+    referee_pairs: list[Partnership]
+    line_pairs: list[Partnership]
+
+
+def leaderboard(
+    officials: Iterable[OfficialSeason],
+    count: Callable[[OfficialSeason], int],
+    doing: str,
+    top: int,
+) -> list[Leader]:
+    """The few who saw the most of something, among those who do that job.
+
+    'Both' belongs on either board: an official who spends a fifth of the season
+    on the lines was on the lines those nights, and what happened in them
+    happened. Nobody with none of it is listed, so a quiet season gives a short
+    board rather than a board of zeroes.
+    """
+    theirs = [
+        (count(one), one) for one in officials if one.role in (doing, "Both") and count(one) > 0
+    ]
+    theirs.sort(key=lambda pair: (-pair[0], pair[1].name))
+
+    return [
+        Leader(
+            person_id=one.person_id,
+            name=one.name,
+            role=one.role,
+            games=one.games,
+            total=total,
+            per_game=round(total / one.games, 2),
+        )
+        for total, one in theirs[:top]
+    ]

@@ -6,7 +6,7 @@
  */
 
 export interface Page {
-  id: 'games' | 'officials'
+  id: 'games' | 'officials' | 'stats'
   name: string
 }
 
@@ -22,4 +22,5 @@ export function viewFromHash(): View {
 export const PAGES: Page[] = [
   { id: 'games', name: 'Games' },
   { id: 'officials', name: 'Officials' },
+  { id: 'stats', name: 'Stats' },
 ]

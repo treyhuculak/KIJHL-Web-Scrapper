@@ -17,9 +17,24 @@ from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool
 
 from .config import DATABASE_URL, SUMMARY_RETRY_DAYS
-from .models import GameRecord, OfficialSeason, Season, role_for
+from .models import (
+    CrewedGame,
+    GameRecord,
+    Official,
+    OfficialSeason,
+    Partnership,
+    Season,
+    SeasonStats,
+    leaderboard,
+    role_for,
+    slots_for,
+)
 
 SCHEMA = Path(__file__).with_name("schema.sql")
+
+# How many rows a leaderboard holds. Short enough to read at a glance and to be
+# worth reading: past the first few, one more game worked is the whole story.
+TOP = 5
 
 _pool: AsyncConnectionPool | None = None
 
@@ -326,3 +341,136 @@ async def officials_in_season(league_id: str, season_id: str) -> list[OfficialSe
             )
             for row in await rows.fetchall()
         ]
+
+
+# A season's standouts.
+#
+# Three questions, and none of them is the one the officials table answers.
+# That table is every official and every figure; these are the few rows at the
+# top of one figure at a time, plus the games and the pairings behind them.
+
+
+WILDEST = """
+    SELECT game_id, played_on, home_code, visitor_code, home_goals, visitor_goals,
+           home_pims + visitor_pims AS pims, majors, fights
+      FROM game
+     WHERE league_id = %s AND season_id = %s AND home_pims IS NOT NULL
+     ORDER BY pims DESC, played_on
+     LIMIT %s
+"""
+
+CREWS = """
+    SELECT go.game_id, o.person_id, o.first_name, o.last_name, o.number, go.slot
+      FROM game_official go
+      JOIN official o USING (league_id, person_id)
+     WHERE go.league_id = %s AND go.game_id = ANY(%s)
+     ORDER BY go.slot
+"""
+
+# Who works with whom, counted a night at a time.
+#
+# The pair, not the crew: an exact foursome almost never repeats — 462 KIJHL
+# games last season produced 435 distinct crews, and the most any one of them
+# worked together was three — while two referees are put together eight or nine
+# times. A crew leaderboard would be a list of one-offs; this isn't.
+PARTNERSHIPS = """
+    WITH nights AS (
+        SELECT array_agg(o.person_id ORDER BY o.last_name, o.first_name, o.person_id) AS pair,
+               array_agg(o.first_name || ' ' || o.last_name
+                         ORDER BY o.last_name, o.first_name, o.person_id) AS names,
+               g.home_pims + g.visitor_pims AS pims
+          FROM game g
+          JOIN game_official go USING (league_id, game_id)
+          JOIN official o       USING (league_id, person_id)
+         WHERE g.league_id = %s
+           AND g.season_id = %s
+           AND g.home_pims IS NOT NULL
+           AND go.slot = ANY(%s)
+         GROUP BY g.game_id, g.home_pims, g.visitor_pims
+        -- Both of them, or it isn't a pairing: a three-man crew leaves one
+        -- referee or one linesperson working the job alone.
+        HAVING count(*) = 2
+    )
+    SELECT names, count(*) AS games, avg(pims) AS pims_per_game
+      FROM nights
+     GROUP BY pair, names
+     ORDER BY games DESC, pims_per_game DESC
+     LIMIT %s
+"""
+
+
+async def _wildest_games(
+    connection: AsyncConnection, league_id: str, season_id: str
+) -> list[CrewedGame]:
+    """The season's heaviest nights, and who worked them.
+
+    Two queries rather than one: the games are found by their own numbers, then
+    the crews are fetched for the handful that won. Aggregating four officials
+    into each row of the first query would mean grouping every game in the
+    season to keep five.
+    """
+    rows = await (await connection.execute(WILDEST, (league_id, season_id, TOP))).fetchall()
+    if not rows:
+        return []
+
+    crews: dict[str, list[Official]] = {}
+    crewed = await connection.execute(CREWS, (league_id, [row["game_id"] for row in rows]))
+    for member in await crewed.fetchall():
+        crews.setdefault(member["game_id"], []).append(
+            Official(
+                person_id=member["person_id"],
+                first_name=member["first_name"],
+                last_name=member["last_name"],
+                slot=member["slot"],
+                number=member["number"],
+            )
+        )
+
+    return [
+        CrewedGame(
+            game_id=row["game_id"],
+            played_on=row["played_on"],
+            home_code=row["home_code"],
+            visitor_code=row["visitor_code"],
+            home_goals=row["home_goals"],
+            visitor_goals=row["visitor_goals"],
+            pims=row["pims"],
+            majors=row["majors"] or 0,
+            fights=row["fights"] or 0,
+            crew=crews.get(row["game_id"], []),
+        )
+        for row in rows
+    ]
+
+
+async def _partnerships(
+    connection: AsyncConnection, league_id: str, season_id: str, role: str
+) -> list[Partnership]:
+    """The pairs of one job put together most often."""
+    rows = await connection.execute(PARTNERSHIPS, (league_id, season_id, slots_for(role), TOP))
+    return [
+        Partnership(
+            names=row["names"],
+            games=row["games"],
+            pims_per_game=round(float(row["pims_per_game"]), 1),
+        )
+        for row in await rows.fetchall()
+    ]
+
+
+async def season_stats(league_id: str, season_id: str) -> SeasonStats:
+    """What stood out about a season.
+
+    The two people boards are read off the same season the officials table is,
+    so a name can't say one thing on one page and another on the next.
+    """
+    officials = await officials_in_season(league_id, season_id)
+
+    async with _ready().connection() as connection:
+        return SeasonStats(
+            fights=leaderboard(officials, lambda one: one.fights, "Linesperson", TOP),
+            majors=leaderboard(officials, lambda one: one.majors, "Referee", TOP),
+            wildest=await _wildest_games(connection, league_id, season_id),
+            referee_pairs=await _partnerships(connection, league_id, season_id, "Referee"),
+            line_pairs=await _partnerships(connection, league_id, season_id, "Linesperson"),
+        )

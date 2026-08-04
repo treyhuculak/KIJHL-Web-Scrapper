@@ -5,6 +5,7 @@ import { Navbar } from './components/Navbar'
 import { Games } from './pages/Games'
 import { Home } from './pages/Home'
 import { Officials } from './pages/Officials'
+import { Stats } from './pages/Stats'
 import './App.css'
 
 /**
@@ -71,7 +72,9 @@ export default function App() {
     <div className={shell}>
       <header className="masthead">
         <h1 className="wordmark">
-          Zebra<span>Zone</span>
+          <a href="#home">
+            Zebra<span>Zone</span>
+          </a>
         </h1>
         <p className="tagline">{selected ? selected.name : 'Officiating, league by league'}</p>
       </header>
@@ -89,6 +92,7 @@ export default function App() {
         )}
         {view === 'games' && <Games league={league} />}
         {view === 'officials' && <Officials league={league} />}
+        {view === 'stats' && <Stats league={league} />}
       </main>
 
       <footer className="colophon">

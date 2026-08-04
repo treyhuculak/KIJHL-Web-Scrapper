@@ -95,14 +95,15 @@ backend/app/
   store.py        Model  — the only code that knows SQL
   schema.sql      the four tables
   ingest.py       the command that fills them from the feed
-  routes.py       Controller — the four GETs below
+  routes.py       Controller — the five GETs below
   main.py         wiring
 
 frontend/src/
   api.ts          Model — types + the calls to the backend
   nav.ts          the pages a league has, and which one the URL is asking for
+  seasons.ts      the season being looked at, shared by the pages built on history
   App.tsx         Controller — the chosen league, and which page is showing
-  pages/          one per page: Home picks a league, Games a day, Officials a season
+  pages/          Home picks a league, Games a day, Officials and Stats a season
   components/     View — presentation only
   assets/leagues/ league logos, each named after its league's id
 ```
@@ -170,10 +171,17 @@ without leaving the page you're on. Either way the choice is kept in
 `sessionStorage`, so it holds across reloads and page changes and is asked for
 again the next time the app is opened fresh.
 
-Pages sit behind a hash — `#games`, `#officials` — which is all the routing this
-needs: the address bar and the back button both work, with no router. It lives in
-`nav.ts` beside the list of pages, and a hash asking for a page before a league
-is chosen lands on the picker instead.
+Pages sit behind a hash — `#games`, `#officials`, `#stats` — which is all the
+routing this needs: the address bar and the back button both work, with no
+router. It lives in `nav.ts` beside the list of pages, and a hash asking for a
+page before a league is chosen lands on the picker instead.
+
+The way back to the picker is the wordmark, not a tab. Three pages and the
+league select is already 383px of a 390px phone, and a Home tab would be another
+74; the wordmark is where a reader looks for it anyway. The tabs scroll sideways
+inside the bar if a narrower phone or a fourth page runs them out of room, which
+is why `.navbar` is `nowrap` and `.tabs` is `min-width: 0` — a flex item won't
+shrink under its content without it, and a strip that can't shrink can't scroll.
 
 ## Look and feel
 
@@ -210,8 +218,9 @@ crest with its three-letter code as the fallback.
 | `GET /api/games?league=whl&date=2026-01-10` | `[{ id, date, status, final, venue, start_time, attendance, home, visitor, notable_penalties, officials }]` |
 | `GET /api/seasons?league=whl` | `[{ id, name, playoff, starts_on }]`, the one being played first |
 | `GET /api/officials?league=whl&season=293` | `[{ person_id, name, number, role, games, pims, pims_per_game, majors, fights }]`, busiest first |
+| `GET /api/stats?league=whl&season=293` | `{ fights, majors, wildest, referee_pairs, line_pairs }` — a season's standouts, five rows each |
 
-The first two read the feed; the last two read the database, and answer `503`
+The first two read the feed; the last three read the database, and answer `503`
 rather than an error when there isn't one — nothing is wrong with the request
 and the answer may exist tomorrow.
 
@@ -247,5 +256,32 @@ but a third of the KIJHL's roster works each job at some point. `Both` needs a
 fifth of their nights on each — see `BOTH_JOBS_SHARE` in `models.py` — because
 covering one game when someone is short isn't a second job, and counting it as
 one put a quarter of that roster under `Both` on the strength of a single night.
+
+## The stats page
+
+The same season, asked a different question. Where the officials page is every
+official and every figure, this is the top five of one figure at a time: the
+lines who broke up the most fights, the referees with the most majors in their
+games, the season's heaviest nights with the crew who had them, and the pairs
+of referees and of linespersons put together most often.
+
+Pairs, not crews, and that's the finding rather than a simplification. An exact
+foursome almost never works together twice — 462 KIJHL games last season
+produced 435 distinct crews, and the most any one of them repeated was three —
+while two referees are put together eight or nine times. Every league behaves
+this way; the OHL managed 674 crews in 681 games. A crew leaderboard would be a
+list of one-offs sorted by luck.
+
+Every board carries a rate beside its total, because whoever saw the most of
+something has usually also worked the most nights. Some of those rates are
+real and some aren't: over a full season the top referee for majors sits four
+standard errors above the league's average, which no amount of scheduling
+explains, while the top pairing's penalty minutes are a five-game average
+against a spread of 37 and mean nothing at all.
+
+And the caveat the page prints under itself: these count what happened in the
+games an official worked, not what they called. The feed names the crew and it
+names the penalties; it never says which of the four blew the whistle. Fixing
+that needs the penalty rows stored per game, which they currently aren't.
 
 Interactive docs while the backend runs: http://127.0.0.1:8100/docs

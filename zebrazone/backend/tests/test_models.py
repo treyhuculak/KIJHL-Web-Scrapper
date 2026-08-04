@@ -2,7 +2,14 @@
 
 import pytest
 
-from app.models import ROLE_BY_SLOT, Official, role_for
+from app.models import (
+    ROLE_BY_SLOT,
+    Official,
+    OfficialSeason,
+    leaderboard,
+    role_for,
+    slots_for,
+)
 
 
 def official(**overrides) -> Official:
@@ -14,6 +21,25 @@ def official(**overrides) -> Official:
         "number": None,
     }
     return Official(**{**fields, **overrides})
+
+
+def season(name: str, role: str, games: int, **counted) -> OfficialSeason:
+    fields = {
+        "person_id": name,
+        "name": name,
+        "number": None,
+        "role": role,
+        "games": games,
+        "pims": 0,
+        "pims_per_game": 0.0,
+        "majors": 0,
+        "fights": 0,
+    }
+    return OfficialSeason(**{**fields, **counted})
+
+
+def fights(one: OfficialSeason) -> int:
+    return one.fights
 
 
 @pytest.mark.parametrize(
@@ -111,3 +137,105 @@ class TestSlotsThatMeanNothing:
         drag someone over or under the line."""
         assert role_for([1, 7]) == "Referee"
         assert role_for([3] * 40 + [1] * 10 + [7] * 50) == "Both"
+
+
+class TestSlotsForAJob:
+    def test_a_job_names_its_own_slots(self):
+        assert slots_for("Referee") == [1, 2]
+        assert slots_for("Linesperson") == [3, 4]
+
+    def test_a_job_nobody_does_has_no_slots(self):
+        """A pairing query handed these finds nothing, which is the right
+        answer — not an error and not every official at once."""
+        assert slots_for("Official") == []
+
+
+class TestALeaderboard:
+    """The few at the top of one figure, out of everyone who worked the season."""
+
+    def test_the_most_comes_first(self):
+        board = leaderboard(
+            [
+                season("Quiet", "Linesperson", 40, fights=2),
+                season("Busy", "Linesperson", 40, fights=9),
+                season("Middling", "Linesperson", 40, fights=5),
+            ],
+            fights,
+            "Linesperson",
+            3,
+        )
+        assert [one.name for one in board] == ["Busy", "Middling", "Quiet"]
+        assert [one.total for one in board] == [9, 5, 2]
+
+    def test_only_the_top_few_are_kept(self):
+        board = leaderboard(
+            [season(f"Lines {n}", "Linesperson", 40, fights=n) for n in range(1, 20)],
+            fights,
+            "Linesperson",
+            5,
+        )
+        assert [one.total for one in board] == [19, 18, 17, 16, 15]
+
+    def test_the_other_job_is_not_on_this_board(self):
+        """Referees see fights too. The question is who breaks them up."""
+        board = leaderboard(
+            [
+                season("Referee", "Referee", 40, fights=30),
+                season("Linesperson", "Linesperson", 40, fights=1),
+            ],
+            fights,
+            "Linesperson",
+            5,
+        )
+        assert [one.name for one in board] == ["Linesperson"]
+
+    def test_working_both_jobs_counts_on_either_board(self):
+        """A fifth of the season on the lines is a season on the lines, and
+        what happened on those nights happened."""
+        both = season("Both", "Both", 40, fights=9, majors=9)
+        assert leaderboard([both], fights, "Linesperson", 5)[0].name == "Both"
+        assert leaderboard([both], lambda one: one.majors, "Referee", 5)[0].name == "Both"
+
+    def test_nobody_is_listed_for_none_of_it(self):
+        """A quiet season gives a short board rather than a board of zeroes."""
+        board = leaderboard(
+            [
+                season("Saw one", "Linesperson", 40, fights=1),
+                season("Saw none", "Linesperson", 40, fights=0),
+            ],
+            fights,
+            "Linesperson",
+            5,
+        )
+        assert [one.name for one in board] == ["Saw one"]
+
+    def test_the_rate_says_how_many_nights_it_took(self):
+        """The whole point of carrying it: the top of a total is usually also
+        whoever worked the most."""
+        board = leaderboard(
+            [
+                season("Everywhere", "Linesperson", 80, fights=20),
+                season("Rarely out", "Linesperson", 10, fights=8),
+            ],
+            fights,
+            "Linesperson",
+            5,
+        )
+        assert [(one.total, one.per_game) for one in board] == [(20, 0.25), (8, 0.8)]
+
+    def test_a_tie_reads_alphabetically(self):
+        """Two equal numbers have no order of their own, so give them a stable
+        one rather than whatever the database happened to return."""
+        board = leaderboard(
+            [
+                season("Zoe Vance", "Linesperson", 40, fights=6),
+                season("Abe Nolan", "Linesperson", 30, fights=6),
+            ],
+            fights,
+            "Linesperson",
+            5,
+        )
+        assert [one.name for one in board] == ["Abe Nolan", "Zoe Vance"]
+
+    def test_a_season_nobody_worked_is_an_empty_board(self):
+        assert leaderboard([], fights, "Linesperson", 5) == []

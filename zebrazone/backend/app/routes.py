@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException, Query
 from . import store
 from .config import LEAGUES, LeagueConfig
 from .hockeytech import FeedUnavailable, fetch_games
-from .models import Game, League, OfficialSeason, Season, Tier
+from .models import Game, League, OfficialSeason, Season, SeasonStats, Tier
 
 router = APIRouter(prefix="/api")
 
@@ -93,5 +93,23 @@ async def list_officials(
     config = _known(league)
     try:
         return await store.officials_in_season(config.id, season)
+    except store.NotConfigured as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+
+
+@router.get("/stats")
+async def season_stats(
+    league: str = Query(..., description="League id, e.g. 'whl'"),
+    season: str = Query(..., description="Season id, from /api/seasons"),
+) -> SeasonStats:
+    """A season's standouts: the fights, the majors, the nights and the pairings.
+
+    Every figure is about the games an official worked rather than the calls
+    they made — the feed names the crew and the penalties, never which of the
+    four blew the whistle.
+    """
+    config = _known(league)
+    try:
+        return await store.season_stats(config.id, season)
     except store.NotConfigured as error:
         raise HTTPException(status_code=503, detail=str(error)) from error

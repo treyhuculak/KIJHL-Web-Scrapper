@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { getOfficials, getSeasons, type OfficialSeason, type Season } from '../api'
+import { getOfficials, type OfficialSeason } from '../api'
+import { Roles } from '../components/Roles'
+import { useSeasons } from '../seasons'
 import './Officials.css'
 
 /**
@@ -26,30 +28,6 @@ function shown(official: OfficialSeason, figure: Figure): string {
 }
 
 /**
- * The job an official worked, beside their name.
- *
- * A referee wears the armband, so the referee's pill is the armband colour and
- * the linesperson's is black — the same thing the page's palette already means.
- * Anyone who worked both jobs enough to count wears both.
- */
-function Role({ role }: { role: string }) {
-  if (role === 'Both') {
-    return (
-      <>
-        <span className="pill referee">Referee</span>
-        <span className="pill">Lines</span>
-      </>
-    )
-  }
-
-  return (
-    <span className={role === 'Referee' ? 'pill referee' : 'pill'}>
-      {role === 'Linesperson' ? 'Lines' : role}
-    </span>
-  )
-}
-
-/**
  * Every official who worked one season of the chosen league.
  *
  * One season at a time, never a career or a span of years: playoffs are their
@@ -57,13 +35,7 @@ function Role({ role }: { role: string }) {
  * together and every figure on the page is a figure from the same competition.
  */
 export function Officials({ league }: { league: string }) {
-  // The seasons are kept with the league they were fetched for, so a league
-  // change can't leave last league's seasons on screen for a render.
-  const [loaded, setLoaded] = useState<{ league: string; seasons: Season[] }>({
-    league: '',
-    seasons: [],
-  })
-  const [picked, setPicked] = useState('')
+  const { seasons, season, choose, listed, error: seasonsError } = useSeasons(league)
   const [officials, setOfficials] = useState<OfficialSeason[]>([])
   const [sort, setSort] = useState<{ by: Figure; descending: boolean }>({
     by: 'games',
@@ -75,25 +47,6 @@ export function Officials({ league }: { league: string }) {
   const [showing, setShowing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const listed = loaded.league === league
-  const seasons = listed ? loaded.seasons : []
-  // The season being played, until the reader asks for another. Derived rather
-  // than stored, so it's never a season this league doesn't have.
-  const season = seasons.some((one) => one.id === picked) ? picked : (seasons[0]?.id ?? '')
-
-  useEffect(() => {
-    let current = true
-    setError(null)
-
-    getSeasons(league)
-      .then((found) => current && setLoaded({ league, seasons: found }))
-      .catch((problem: Error) => current && setError(problem.message))
-
-    return () => {
-      current = false
-    }
-  }, [league])
 
   useEffect(() => {
     if (!season) {
@@ -136,6 +89,10 @@ export function Officials({ league }: { league: string }) {
     )
   }, [shortlist, sort])
 
+  /** Either fetch can be the one that failed, and both say the same thing when
+   *  the trouble is that there's no database to read. */
+  const trouble = seasonsError ?? error
+
   /** Sort by a column: most first, or least first if it's already the one. */
   function reorder(by: Figure) {
     setSort((current) =>
@@ -150,7 +107,7 @@ export function Officials({ league }: { league: string }) {
           <select
             aria-label="Season"
             value={season}
-            onChange={(event) => setPicked(event.target.value)}
+            onChange={(event) => choose(event.target.value)}
           >
             {seasons.map((one) => (
               <option key={one.id} value={one.id}>
@@ -213,13 +170,13 @@ export function Officials({ league }: { league: string }) {
         </div>
       )}
 
-      {error && <p className="message error">{error}</p>}
-      {!listed && !error && <p className="message">Loading seasons…</p>}
-      {listed && !error && seasons.length === 0 && (
+      {trouble && <p className="message error">{trouble}</p>}
+      {!listed && !trouble && <p className="message">Loading seasons…</p>}
+      {listed && !trouble && seasons.length === 0 && (
         <p className="message">No seasons have been stored for this league yet.</p>
       )}
       {loading && <p className="message">Loading officials…</p>}
-      {!loading && !error && season && officials.length === 0 && (
+      {!loading && !trouble && season && officials.length === 0 && (
         <p className="message">No officials worked this season.</p>
       )}
       {officials.length > 0 && rows.length === 0 && (
@@ -281,9 +238,7 @@ export function Officials({ league }: { league: string }) {
                           <span className="who-number"> #{official.number}</span>
                         )}
                       </span>
-                      <span className="roles">
-                        <Role role={official.role} />
-                      </span>
+                      <Roles role={official.role} />
                     </div>
                   </th>
                   {FIGURES.map((figure) => (

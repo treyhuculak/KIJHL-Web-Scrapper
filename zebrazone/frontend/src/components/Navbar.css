@@ -5,7 +5,10 @@
   top: 0;
   z-index: 1;
   display: flex;
-  flex-wrap: wrap;
+  /* One line, always. Allowed to wrap, the tabs take the full width and drop
+     the league select onto a second row — and the tabs are the thing that can
+     scroll instead. */
+  flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
   gap: 10px 14px;
@@ -16,8 +19,9 @@
 }
 
 .navbar select {
-  /* Lets the picker shrink instead of pushing the bar past the screen. */
-  min-width: 0;
+  /* Kept whole, whatever the tabs need — a three-letter code has nothing to
+     give up, and the tabs beside it can scroll. */
+  flex: none;
   font: inherit;
   /* 16px, or iOS Safari zooms the page in when a control takes focus. */
   font-size: 16px;
@@ -44,8 +48,10 @@
      tab's text would sit at the top of its pill with the slack beneath. */
   align-items: center;
   gap: 4px;
-  /* More pages than a phone has room for slide sideways rather than stack. */
-  max-width: 100%;
+  /* More pages than a phone has room for slide sideways rather than stack.
+     min-width, because a flex item won't shrink under its content without it,
+     and a strip that can't shrink can't scroll. */
+  min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }

@@ -71,6 +71,28 @@
   color: var(--armband);
 }
 
+.wordmark a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 'Zone' is already the armband colour, so hovering brings the rest of the
+   word up to meet it — enough of a cue that the whole thing is a link. */
+@media (hover: hover) {
+  .wordmark a {
+    transition: color 0.15s;
+  }
+
+  .wordmark a:hover {
+    color: var(--armband);
+  }
+}
+
+.wordmark a:focus-visible {
+  outline: 2px solid var(--armband);
+  outline-offset: 4px;
+}
+
 .tagline {
   /* Held open so the page doesn't jump when the league name arrives. */
   min-height: 1.4em;
