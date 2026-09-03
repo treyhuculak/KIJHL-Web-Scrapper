@@ -118,8 +118,8 @@ LEAGUES: dict[str, LeagueConfig] = {
     "bchc": LeagueConfig(
         id="bchc",
         name="British Columbia Hockey Conference",
-        client_code="hockeytechtraining",
-        api_key="60926b45222d54eb",
+        client_code="bchc",
+        api_key="80a5db2bdb2439da",
         accent=COLOURS["red"],
         tier=Tier.JUNIOR_A,
         visible=True,
@@ -158,6 +158,6 @@ LEAGUES: dict[str, LeagueConfig] = {
         api_key="2589e0f644b1bb71",
         accent=COLOURS["red"],
         tier=Tier.JUNIOR_B,
-        visible=True,
+        visible=False,
     ),
 }
