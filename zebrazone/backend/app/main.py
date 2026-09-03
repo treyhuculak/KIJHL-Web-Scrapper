@@ -10,12 +10,13 @@ from .routes import router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Open the database while the app is still starting.
+    """Build the database pool, without waking anything up.
 
-    Neon suspends an idle free database, and waking it costs the better part of
-    a second. Spending it here means it overlaps the rest of the boot and the
-    browser fetching its JavaScript, instead of being charged to whoever asks
-    the first question. Without a DATABASE_URL this does nothing at all.
+    Deliberately not a connection. Neon's free tier bills the hours its compute
+    spends awake, and a container that connects on boot spends them on every
+    cold start — including the ones that only serve the games page, which reads
+    the feed live and asks the database nothing. The first query is what wakes
+    it. See `store.open_pool`. Without a DATABASE_URL this does nothing at all.
     """
     await store.open_pool()
     try:

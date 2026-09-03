@@ -72,13 +72,29 @@ async def _prepare(connection: AsyncConnection) -> None:
     connection.prepare_threshold = None
 
 
-async def open_pool() -> None:
-    """Open the pool, and wake the database while nothing is waiting on it.
+# How long an unused connection is kept. Comfortably inside Neon's idle window,
+# so the pool lets go of a connection before the database does.
+IDLE_SECONDS = 120
 
-    Neon suspends an idle database after a few minutes, and waking it takes the
-    better part of a second. Doing it here, at startup, means that second
-    overlaps the rest of the app booting and the browser fetching its
-    JavaScript, rather than landing on top of the first request that wants data.
+
+async def open_pool() -> None:
+    """Build the pool. Nothing here connects to anything.
+
+    The first query opens the first connection, and on Neon's free tier that is
+    the whole point: the compute suspends when idle and is billed for the time
+    it spends awake, so connecting at startup would charge a database wake to
+    every cold start — including the ones that only ever serve the games page,
+    which reads the feed live and never asks the database anything.
+
+    The laziness is `min_size=0`, not the absence of a query. A pool with a
+    minimum keeps that many connections up from the moment it opens, which
+    wakes the database just as surely as asking it something would.
+
+    The cost is real and lands on one reader: whoever first opens a stats or
+    officials page after a quiet spell waits for the wake, which is the better
+    part of a second. That used to be paid at boot, overlapping the browser
+    fetching its JavaScript. It is a worse deal for one person and a much
+    better one for the compute budget, which is what runs out.
     """
     global _pool
     if not DATABASE_URL:
@@ -87,15 +103,18 @@ async def open_pool() -> None:
     _check_loop()
     _pool = AsyncConnectionPool(
         DATABASE_URL,
-        min_size=1,
+        min_size=0,
         max_size=4,
+        # Nothing held across a suspend, or we would hand out a dead connection.
+        max_idle=IDLE_SECONDS,
+        # And if one dies behind our back anyway — a suspend we mistimed, a
+        # compute moving — that costs a reconnection rather than somebody's page.
+        check=AsyncConnectionPool.check_connection,
         configure=_prepare,
         kwargs={"row_factory": dict_row},
         open=False,
     )
-    await _pool.open(wait=True, timeout=30)
-    async with _pool.connection() as connection:
-        await connection.execute("SELECT 1")
+    await _pool.open(wait=False)
 
 
 async def close_pool() -> None:

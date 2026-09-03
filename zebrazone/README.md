@@ -69,6 +69,25 @@ to export it can't quietly turn into a page saying there's no history. A real
 production gets its Neon one. Anything that builds an image from `backend/`
 must exclude `.env`.
 
+Nothing connects at startup, on purpose. Neon's free tier bills the hours its
+compute spends awake — 100 CU-hrs a month, which at 0.25 CU is 400 hours of a
+730-hour month, so it has to sleep. It suspends itself when idle and the first
+query wakes it, which means a backend that connects on boot spends a wake on
+every cold start, including the cold starts that only ever serve the games page
+and never ask the database anything. So `open_pool` builds the pool and stops
+there.
+
+The laziness is `min_size=0`, not the absence of a query: a pool with a minimum
+holds that many connections from the moment it opens, which wakes the database
+just as surely as asking it something. `max_idle` is under the idle window too,
+so the pool lets go of a connection before the database does rather than
+handing out a dead one. The cost lands on one reader — whoever opens an
+officials or stats page after a quiet spell waits for the wake.
+
+Storage is not the constraint and won't become one. Five seasons across six
+leagues is 9.5 MiB of tables and indexes, 17 MiB of database once Postgres'
+own catalogs are counted, and it grows about 2.5 MiB a year.
+
 `npm run db:stop` stops it and keeps the data. `docker compose down -v` is the
 one to be careful with: it throws the volume away, and refilling from the feed
 is twenty minutes — which is why there's no short name for it here. Any Postgres
