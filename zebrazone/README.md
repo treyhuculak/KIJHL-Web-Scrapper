@@ -13,11 +13,18 @@ One command, from this directory:
 
 ```bash
 npm install       # first time only, for the runner itself
-npm run locally
+npm start         # Postgres, then the backend and frontend together
 ```
 
-It runs the two commands below side by side, labelling whose output is whose, and
-Ctrl+C stops both. Their dependencies still have to be installed the first time.
+That's `npm run db` followed by `npm run locally`. The second is the two halves
+of the app side by side, labelling whose output is whose, with Ctrl+C stopping
+both — run it on its own if you'd rather bring your own Postgres. Their
+dependencies still have to be installed the first time.
+
+```bash
+npm run db        # start the bundled Postgres and wait for it
+npm run db:stop   # stop it, keeping the data
+```
 
 Or a terminal each:
 
@@ -48,8 +55,12 @@ directly, and without `DATABASE_URL` the app runs fine and says so plainly if
 you ask it for a statistic.
 
 ```bash
-docker compose up -d --wait     # Postgres, with the schema already applied
+npm run db     # docker compose up -d --wait, schema already applied
 ```
+
+It publishes **5433**, not Postgres' usual 5432 — that port is popular enough
+that another project holding it would otherwise stop this one from starting.
+Inside the container it's still 5432.
 
 The connection string lives in `backend/.env`, which is git-ignored and read at
 startup — so it doesn't matter which shell you run things from, and forgetting
@@ -58,9 +69,11 @@ to export it can't quietly turn into a page saying there's no history. A real
 production gets its Neon one. Anything that builds an image from `backend/`
 must exclude `.env`.
 
-`docker compose down` stops it and keeps the data; `down -v` throws the data
-away. Any Postgres will do if you'd rather not use Docker — the schema is
-`backend/app/schema.sql` and `ingest` applies it itself.
+`npm run db:stop` stops it and keeps the data. `docker compose down -v` is the
+one to be careful with: it throws the volume away, and refilling from the feed
+is twenty minutes — which is why there's no short name for it here. Any Postgres
+will do if you'd rather not use Docker; the schema is `backend/app/schema.sql`
+and `ingest` applies it itself.
 
 Then fill it from the feed:
 

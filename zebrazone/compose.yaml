@@ -10,7 +10,7 @@
 #
 # Then, in the shell you run the backend from:
 #
-#   export DATABASE_URL=postgresql://zebrazone:zebrazone@localhost:5432/zebrazone
+#   export DATABASE_URL=postgresql://zebrazone:zebrazone@localhost:5433/zebrazone
 
 services:
   db:
@@ -22,7 +22,10 @@ services:
       POSTGRES_PASSWORD: zebrazone
       POSTGRES_DB: zebrazone
     ports:
-      - "5432:5432"
+      # 5433 on the host, because Postgres' own 5432 is a popular port and
+      # another project holding it would otherwise stop this one from
+      # starting. Inside the container it is still 5432.
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql
       # Postgres runs everything in here the first time it builds its data

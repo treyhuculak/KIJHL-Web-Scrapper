@@ -2,9 +2,12 @@
   "name": "zebrazone",
   "private": true,
   "version": "0.0.0",
-  "description": "Runs both halves of the app locally: npm run locally",
+  "description": "Runs the app locally: npm start for everything, npm run locally for just the two halves",
   "scripts": {
-    "locally": "concurrently -k -n api,web -c cyan,magenta \"cd backend && uvicorn app.main:app --reload --port 8100\" \"cd frontend && npm run dev\""
+    "start": "npm run db && npm run locally",
+    "locally": "concurrently -k -n api,web -c cyan,magenta \"cd backend && uvicorn app.main:app --reload --port 8100\" \"cd frontend && npm run dev\"",
+    "db": "docker compose up -d --wait",
+    "db:stop": "docker compose down"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
