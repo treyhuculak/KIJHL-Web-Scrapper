@@ -98,6 +98,14 @@ sometimes lag a game by a day or two. After that it's left alone: a league whose
 key can't read the view at all would otherwise be re-asked for every game it
 has, every night, forever.
 
+A request that fails on the way out is retried twice, two seconds apart, and
+only when asking again could get a different answer: a dropped connection or a
+5xx, never a 404 and never the feed's own `Feed type access denied.` — those say
+the same thing however many times you ask, and the callers that tolerate them
+are waiting to hear it rather than to wait. Without this a full backfill is
+thousands of requests with a single point of failure, and the first one died on
+a connect timeout with one league read and seven to go.
+
 ## Layout
 
 ```

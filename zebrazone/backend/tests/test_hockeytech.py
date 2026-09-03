@@ -7,9 +7,12 @@ officials. No test reaches the network: these are the rules we apply to what
 comes back, and they should be checkable without asking anyone for anything.
 """
 
+import httpx
 import pytest
 
 from app.hockeytech import (
+    AGAIN_LATER,
+    FeedUnavailable,
     _count_majors,
     _number,
     _read_game,
@@ -17,6 +20,7 @@ from app.hockeytech import (
     _read_penalty,
     _read_scheduled,
     _read_summary,
+    _transient,
 )
 
 
@@ -330,3 +334,46 @@ class TestReadScheduled:
 def test_number_takes_what_the_feed_sends(sent, expected):
     """Numbers arrive as ints, as strings, and as blanks where none was given."""
     assert _number(sent) == expected
+
+
+class TestWhatIsWorthAskingTwice:
+    """Which failures a backfill should sit out and which it should give up on.
+
+    The first full backfill died on a connect timeout with one league read and
+    seven to go, which is what the retry is for. What it must not do is retry
+    the feed's own refusals — a key that isn't cleared for a view says so for
+    every game in the league, and waiting two seconds each time would turn a
+    quiet degradation into an hour of nothing.
+    """
+
+    def _refused(self, status: int) -> httpx.HTTPStatusError:
+        request = httpx.Request("GET", "https://example.test/feed/")
+        return httpx.HTTPStatusError(
+            f"{status}", request=request, response=httpx.Response(status, request=request)
+        )
+
+    @pytest.mark.parametrize(
+        "error",
+        [
+            httpx.ConnectTimeout("timed out"),
+            httpx.ReadTimeout("timed out"),
+            httpx.ConnectError("refused"),
+            httpx.PoolTimeout("no connection free"),
+        ],
+    )
+    def test_a_connection_that_never_happened_is_worth_another_go(self, error):
+        assert _transient(error)
+
+    @pytest.mark.parametrize("status", sorted(AGAIN_LATER))
+    def test_a_server_having_a_moment_is_too(self, status):
+        assert _transient(self._refused(status))
+
+    @pytest.mark.parametrize("status", [400, 401, 403, 404, 410, 422])
+    def test_but_a_refusal_means_the_same_thing_every_time(self, status):
+        assert not _transient(self._refused(status))
+
+    def test_and_the_feed_saying_no_at_200_is_an_answer_not_a_failure(self):
+        """'Feed type access denied.' with an HTTP 200 body — the WIJHL's key
+        does this for every game summary it has. Retrying it would cost two
+        seconds a game to learn what it said the first time."""
+        assert not _transient(FeedUnavailable("Feed type access denied."))

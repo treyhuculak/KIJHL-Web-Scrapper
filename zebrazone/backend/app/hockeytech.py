@@ -20,6 +20,16 @@ from .models import Game, GameRecord, Official, Penalty, Season, Summary, Team
 FEED_URL = "https://lscluster.hockeytech.com/feed/"
 TIMEOUT_SECONDS = 15
 
+# A backfill is thousands of requests to someone else's server over twenty-odd
+# minutes, and one dropped connection used to end the whole run — the first
+# full backfill died on a connect timeout with the WHL read and seven leagues
+# to go. Two more tries, a couple of seconds apart.
+RETRIES = 2
+RETRY_PAUSE_SECONDS = 2
+
+# The statuses that mean 'ask again later' rather than 'stop asking'.
+AGAIN_LATER = {429, 500, 502, 503, 504}
+
 # How many summaries to ask for at once when reading a season. The feed is
 # someone else's, and a backfill is hundreds of games.
 AT_ONCE = 6
@@ -128,7 +138,38 @@ async def fetch_summaries(league: LeagueConfig, game_ids: list[str]) -> dict[str
         return dict(await asyncio.gather(*(one(client, game_id) for game_id in game_ids)))
 
 
+def _transient(error: Exception) -> bool:
+    """Whether asking again could plausibly get a different answer.
+
+    A dropped connection or a server having a moment, yes. A refusal, a 404 or
+    a 403, no — those say the same thing however many times you ask, and the
+    callers that tolerate them are waiting to hear it rather than to wait.
+    """
+    if isinstance(error, httpx.TransportError):
+        return True
+    return isinstance(error, httpx.HTTPStatusError) and error.response.status_code in AGAIN_LATER
+
+
 async def _get(client: httpx.AsyncClient, league: LeagueConfig, **params: str) -> dict:
+    """One call to the feed, asked again if the failure was worth re-asking.
+
+    Only the transport-level failures are retried. The feed refusing a view it
+    hasn't cleared the key for is not a failure to retry — it's an answer, and
+    `_fetch_summary` and `_fetch_logos` are written to accept it.
+    """
+    for attempt in range(RETRIES):
+        try:
+            return await _once(client, league, **params)
+        except (httpx.HTTPError, FeedUnavailable) as error:
+            if not _transient(error):
+                raise
+            await asyncio.sleep(RETRY_PAUSE_SECONDS * (attempt + 1))
+
+    # Whatever the last try does is the caller's to hear about.
+    return await _once(client, league, **params)
+
+
+async def _once(client: httpx.AsyncClient, league: LeagueConfig, **params: str) -> dict:
     """One call to the feed, with the credentials every call needs."""
     response = await client.get(
         FEED_URL,
