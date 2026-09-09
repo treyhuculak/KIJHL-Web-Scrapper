@@ -2,7 +2,9 @@
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from psycopg_pool import PoolTimeout
 
 from . import store
 from .routes import router
@@ -27,3 +29,14 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="ZebraZone", lifespan=lifespan)
 app.include_router(router)
+
+
+@app.exception_handler(PoolTimeout)
+async def no_answer(request: Request, error: Exception) -> JSONResponse:
+    """A database that never picked up. Handled here rather than in the routes
+    because it can come out of any query, and it means the same thing whichever
+    one it was: not a broken request, a database to ask again in a minute."""
+    return JSONResponse(
+        status_code=503,
+        content={"detail": "The database did not answer in time. Try again in a moment."},
+    )
