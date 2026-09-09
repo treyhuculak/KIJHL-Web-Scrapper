@@ -1,0 +1,27 @@
+# What never goes into the image.
+#
+# `.env` first and loudest. It holds the local database URL, config.py reads it
+# at import time, and a copy of it inside the image would quietly outrank
+# nothing — but it would ship a credential to a registry, and production's
+# DATABASE_URL is meant to arrive from the environment instead. The Dockerfile
+# copies only `app`, so this is the second lock rather than the first; it is
+# here so that the day someone writes `COPY . .` it still holds.
+.env
+.env.*
+
+# Tests, tooling and caches: none of it runs in production, and the bytecode is
+# compiled for whichever machine built the thing rather than for this one.
+#
+# The `**/` matters. A bare `__pycache__/` matches a directory at the top of the
+# context and nowhere else, so `app/__pycache__` shipped until this said so.
+tests/
+pyproject.toml
+requirements-dev.txt
+**/__pycache__/
+**/*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+Dockerfile
+.dockerignore
